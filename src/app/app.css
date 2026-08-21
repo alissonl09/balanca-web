@@ -1432,3 +1432,25 @@
     margin-top: 4px;
   }
 }
+
+/* =========================================================
+   Cores dos ícones do menu lateral
+   ========================================================= */
+
+/* Item não selecionado: ícone branco */
+.menu-item .menu-image {
+  filter: brightness(0) invert(1);
+}
+
+/* Item selecionado: ícone verde institucional */
+.menu-item.active .menu-image {
+  filter:
+    brightness(0)
+    saturate(100%)
+    invert(24%)
+    sepia(31%)
+    saturate(1270%)
+    hue-rotate(116deg)
+    brightness(87%)
+    contrast(103%);
+}

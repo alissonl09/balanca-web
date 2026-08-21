@@ -1,3 +1,15 @@
+/* =========================================================
+   Fonte digital do visor
+   ========================================================= */
+
+@font-face {
+  font-family: 'DS-Digital';
+  src: url('/fonts/DS-Digital.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :host {
   display: block;
   min-height: 100vh;
@@ -337,7 +349,9 @@
   }
 }
 
-/* Cabeçalho baseado no padrão visual do SGV */
+/* =========================================================
+   Cabeçalho baseado no padrão visual do SGV
+   ========================================================= */
 
 .topbar {
   min-height: 70px;
@@ -431,7 +445,9 @@
   font-size: 20px;
 }
 
-/* Menu lateral baseado no padrão visual do SGV */
+/* =========================================================
+   Menu lateral baseado no padrão visual do SGV
+   ========================================================= */
 
 .workspace {
   min-height: calc(100vh - 70px);
@@ -487,7 +503,9 @@
   border-radius: 24px 0 0 0;
 }
 
-/* Ajuste para telas menores */
+/* =========================================================
+   Ajuste para telas menores
+   ========================================================= */
 
 @media (max-width: 900px) {
   .topbar {
@@ -525,7 +543,9 @@
   }
 }
 
-/* Título da tela de pesagem */
+/* =========================================================
+   Título da tela de pesagem
+   ========================================================= */
 
 .title-content {
   display: flex;
@@ -591,7 +611,9 @@
   }
 }
 
-/* Dados do veículo e da operação */
+/* =========================================================
+   Dados do veículo e da operação
+   ========================================================= */
 
 .operation-section {
   margin-top: 24px;
@@ -669,7 +691,9 @@
   }
 }
 
-/* Área inferior da pesagem */
+/* =========================================================
+   Área inferior da pesagem
+   ========================================================= */
 
 .weighing-area {
   margin-top: 16px;
@@ -704,28 +728,67 @@
   font-size: 18px;
 }
 
-/* Visor digital */
+/* =========================================================
+   Visor digital
+   ========================================================= */
 
 .digital-display {
   min-height: 122px;
   margin-top: 8px;
-  padding: 12px 18px 9px;
+
+  /*
+   * 70px à direita deixam espaço para
+   * a unidade "Kg".
+   */
+  padding: 12px 70px 9px 18px;
+
   border-radius: 9px;
   background: linear-gradient(135deg, #006548, #004934);
   color: white;
+
   position: relative;
+
   display: flex;
   align-items: center;
-  justify-content: center;
+
+  /*
+   * Peso alinhado à direita.
+   */
+  justify-content: flex-end;
 }
 
 .digital-value {
   color: #92e52d;
-  font-family: 'Courier New', Consolas, monospace;
-  font-size: 58px;
-  font-weight: 700;
+
+  /*
+   * Fonte digital incluída em:
+   *
+   * public/fonts/DS-Digital.woff2
+   */
+  font-family: 'DS-Digital', 'Courier New', Consolas, monospace;
+
+  /*
+   * A DS-Digital é visualmente mais estreita,
+   * então podemos utilizar um tamanho um pouco maior.
+   */
+  font-size: 80px;
+
+  /*
+   * A própria fonte já possui o desenho
+   * segmentado do visor.
+   */
+  font-weight: normal;
+
   line-height: 1;
-  letter-spacing: 7px;
+
+  /*
+   * Menor que o antigo 7px, pois a DS-Digital
+   * já possui espaçamento característico.
+   */
+  letter-spacing: 3px;
+
+  text-align: right;
+
   text-shadow: 0 0 8px rgba(146, 229, 45, 0.32);
 }
 
@@ -752,20 +815,33 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
+
+  /* Conectado */
   background: #72d72d;
   box-shadow: 0 0 6px rgba(114, 215, 45, 0.75);
 }
 
-.scale-status-dot.unstable {
+/* Conectando */
+
+.scale-status-dot.connecting {
   background: #f6c746;
   box-shadow: 0 0 6px rgba(246, 199, 70, 0.75);
+}
+
+/* Desconectado */
+
+.scale-status-dot.disconnected {
+  background: #e14b4b;
+  box-shadow: 0 0 6px rgba(225, 75, 75, 0.75);
 }
 
 .status-separator {
   opacity: 0.8;
 }
 
-/* Resumo da pesagem */
+/* =========================================================
+   Resumo da pesagem
+   ========================================================= */
 
 .summary-grid {
   margin-top: 8px;
@@ -838,12 +914,18 @@
   }
 
   .digital-value {
-    font-size: 44px;
-    letter-spacing: 4px;
+    font-size: 50px;
+    letter-spacing: 2px;
+  }
+
+  .digital-display {
+    padding-right: 62px;
   }
 }
 
-/* Organização principal do conteúdo */
+/* =========================================================
+   Organização principal do conteúdo
+   ========================================================= */
 
 .content-layout {
   width: 100%;
@@ -860,7 +942,9 @@
   margin: 0;
 }
 
-/* Painel lateral direito */
+/* =========================================================
+   Painel lateral direito
+   ========================================================= */
 
 .right-panel {
   display: flex;
@@ -877,7 +961,9 @@
   box-shadow: 0 2px 7px rgba(0, 0, 0, 0.05);
 }
 
-/* Fila de veículos */
+/* =========================================================
+   Fila de veículos
+   ========================================================= */
 
 .queue-card {
   padding: 16px;
@@ -993,7 +1079,9 @@
   background: #e5eeeb;
 }
 
-/* Botões laterais */
+/* =========================================================
+   Botões laterais
+   ========================================================= */
 
 .action-card {
   padding: 8px;
@@ -1081,7 +1169,9 @@
   color: #ffffff;
 }
 
-/* Ajustes de tamanho */
+/* =========================================================
+   Ajustes de tamanho
+   ========================================================= */
 
 @media (max-width: 1250px) {
   .content-layout {
@@ -1100,7 +1190,9 @@
   }
 }
 
-/* Ícones personalizados dos botões laterais */
+/* =========================================================
+   Ícones personalizados dos botões laterais
+   ========================================================= */
 
 .custom-action-image {
   width: 25px;
@@ -1121,6 +1213,7 @@
   width: 24px;
   height: 24px;
   object-fit: contain;
+
   filter: brightness(0) saturate(100%) invert(21%) sepia(94%) saturate(2753%) hue-rotate(349deg)
     brightness(91%) contrast(88%);
 }
@@ -1131,16 +1224,19 @@
   width: 29px;
   height: 29px;
   object-fit: contain;
+
   filter: brightness(0) saturate(100%) invert(24%) sepia(31%) saturate(1270%) hue-rotate(116deg)
     brightness(87%) contrast(103%);
 }
 
 /* Aumenta o espaço reservado para os ícones laterais */
+
 .action-button {
   grid-template-columns: 42px minmax(0, 1fr) auto;
 }
 
 /* Tamanho padrão dos ícones SVG dos botões */
+
 .custom-action-image {
   display: block;
   width: 34px;
@@ -1149,6 +1245,7 @@
   object-fit: contain;
   justify-self: center;
 }
+
 /* Alinhamento uniforme dos botões laterais */
 
 .action-button {
@@ -1223,7 +1320,7 @@
   width: 36px !important;
   height: 36px !important;
   max-width: none !important;
-  transform: scale(1.20);
+  transform: scale(1.2);
   transform-origin: center;
 }
 
@@ -1241,6 +1338,10 @@
   transform: scale(1.25);
   transform-origin: center;
 }
+
+/* =========================================================
+   Dados de origem
+   ========================================================= */
 
 .origin-data {
   margin-top: 12px;
@@ -1293,8 +1394,8 @@
    ========================================================= */
 
 @media (min-width: 1251px) and (max-height: 950px) {
-
   /* Cabeçalho */
+
   .topbar {
     min-height: 62px;
     height: 62px;
@@ -1310,22 +1411,26 @@
   }
 
   /* Área cinza ao redor da tela */
+
   .content {
     padding: 14px 18px;
   }
 
   /* Card principal */
+
   .page-card {
     padding: 16px 20px;
   }
 
   /* Cabeçalho Pesagem */
+
   .page-title {
     padding-bottom: 12px;
     align-items: center;
   }
 
   /* Consulta da pré-ticket */
+
   .search-section {
     margin-top: 14px;
     padding: 12px 16px;
@@ -1336,6 +1441,7 @@
   }
 
   /* Dados do veículo */
+
   .operation-section {
     margin-top: 14px;
     padding: 12px 16px;
@@ -1349,17 +1455,20 @@
    * Aqui está uma das principais economias:
    * 4 campos por linha em vez de 3.
    */
+
   .operation-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px 12px;
   }
 
   /* Mantém observação ocupando a linha inteira */
+
   .operation-grid .full-field {
     grid-column: 1 / -1;
   }
 
   /* Menos espaço interno, mantendo a fonte atual */
+
   .form-field {
     gap: 4px;
   }
@@ -1376,6 +1485,7 @@
   }
 
   /* Dados da origem da XFER */
+
   .origin-data {
     margin-top: 8px;
     padding: 8px 10px;
@@ -1389,12 +1499,14 @@
    * Como existem quatro informações, elas ficam
    * todas na mesma linha.
    */
+
   .origin-data__fields {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 10px;
   }
 
   /* Indicador e resumo */
+
   .weighing-area {
     margin-top: 10px;
     gap: 12px;
@@ -1412,6 +1524,20 @@
   .digital-display {
     min-height: 100px;
     margin-top: 5px;
+
+    /*
+     * Mantemos espaço para o Kg mesmo
+     * no layout compacto.
+     */
+    padding-right: 70px;
+  }
+
+  .digital-value {
+    /*
+     * Mantemos a aparência da DS-Digital
+     * também na versão compacta.
+     */
+    font-size: 80px;
   }
 
   .summary-grid {

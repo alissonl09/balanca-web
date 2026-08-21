@@ -3,11 +3,7 @@
     <div class="page-title">
       <div class="title-content">
         <div class="title-icon">
-          <img
-            src="/images/balanca_icon.svg"
-            alt="Ícone de balança"
-            class="page-weighing-icon"
-          />
+          <img src="/images/balanca_icon.svg" alt="Ícone de balança" class="page-weighing-icon" />
         </div>
 
         <div>
@@ -32,9 +28,7 @@
 
       <div class="search-grid">
         <div class="form-field">
-          <label for="unidade">
-            Unidade da balança
-          </label>
+          <label for="unidade"> Unidade da balança </label>
 
           <input
             id="unidade"
@@ -47,9 +41,7 @@
         </div>
 
         <div class="form-field">
-          <label for="placa">
-            Placa
-          </label>
+          <label for="placa"> Placa </label>
 
           <input
             id="placa"
@@ -74,11 +66,7 @@
         </div>
       </div>
 
-      <div
-        *ngIf="mensagem"
-        class="message"
-        [ngClass]="tipoMensagem"
-      >
+      <div *ngIf="mensagem" class="message" [ngClass]="tipoMensagem">
         {{ mensagem }}
       </div>
     </section>
@@ -87,19 +75,13 @@
     <section class="operation-section">
       <div class="operation-title">
         <div class="operation-title-icon">
-          <img
-            src="/images/truck.svg"
-            alt=""
-          />
+          <img src="/images/truck.svg" alt="" />
         </div>
 
         <div>
           <h2>Dados do Veículo e Operação</h2>
 
-          <p>
-            Informações retornadas pela Libra-API e campos reservados
-            para futuras integrações.
-          </p>
+          <p>Informações retornadas pela Libra-API e campos reservados para futuras integrações.</p>
         </div>
       </div>
 
@@ -107,164 +89,96 @@
         <div class="form-field">
           <label>Placa</label>
 
-          <input
-            type="text"
-            readonly
-            [value]="placa"
-          />
+          <input type="text" readonly [value]="placa" />
         </div>
 
         <div class="form-field future-field">
           <label>Veículo</label>
 
-          <input
-            type="text"
-            disabled
-            placeholder="Integração futura"
-          />
+          <input type="text" disabled placeholder="Integração futura" />
         </div>
 
         <div class="form-field future-field">
           <label>Carreta 2</label>
 
-          <input
-            type="text"
-            disabled
-            placeholder="Integração futura"
-          />
+          <input type="text" disabled placeholder="Integração futura" />
         </div>
 
         <div class="form-field">
           <label>Transportador</label>
 
-          <input
-            type="text"
-            readonly
-            [value]="preTicket?.transportador ?? ''"
-          />
+          <input type="text" readonly [value]="preTicket?.transportador ?? ''" />
         </div>
 
         <div class="form-field">
           <label>Emissor</label>
 
-          <input
-            type="text"
-            readonly
-            [value]="preTicket?.emissor ?? ''"
-          />
+          <input type="text" readonly [value]="preTicket?.emissor ?? ''" />
         </div>
 
         <div class="form-field future-field">
           <label>Item</label>
 
-          <input
-            type="text"
-            disabled
-            placeholder="Integração futura"
-          />
+          <input type="text" disabled placeholder="Integração futura" />
         </div>
 
         <div class="form-field">
           <label>Depósito</label>
 
-          <input
-            type="text"
-            readonly
-            [value]="preTicket?.deposito ?? ''"
-          />
+          <input type="text" readonly [value]="preTicket?.deposito ?? ''" />
         </div>
 
         <div class="form-field future-field">
           <label>Destino</label>
 
-          <input
-            type="text"
-            disabled
-            placeholder="Integração futura"
-          />
+          <input type="text" disabled placeholder="Integração futura" />
         </div>
 
         <div class="form-field">
           <label>Motorista</label>
 
-          <input
-            type="text"
-            readonly
-            [value]="preTicket?.motorista ?? ''"
-          />
+          <input type="text" readonly [value]="preTicket?.motorista ?? ''" />
         </div>
 
         <div class="form-field">
           <label>Tipo do documento</label>
 
-          <input
-            type="text"
-            readonly
-            [value]="preTicket?.tipoDocumento ?? ''"
-          />
+          <input type="text" readonly [value]="preTicket?.tipoDocumento ?? ''" />
         </div>
 
-        <div
-          *ngIf="preTicket?.tipoOperacao as tipoOperacao"
-          class="form-field"
-        >
+        <div *ngIf="preTicket?.tipoOperacao as tipoOperacao" class="form-field">
           <label>Tipo da operação</label>
 
-          <input
-            type="text"
-            readonly
-            [value]="formatarTipoOperacao(tipoOperacao)"
-          />
+          <input type="text" readonly [value]="formatarTipoOperacao(tipoOperacao)" />
         </div>
 
         <div class="form-field">
           <label>Nota</label>
 
-          <input
-            type="text"
-            readonly
-            [value]="preTicket?.nota ?? ''"
-          />
+          <input type="text" readonly [value]="preTicket?.nota ?? ''" />
         </div>
 
         <div class="form-field">
           <label>Peso N.F. (Kg)</label>
 
-          <input
-            type="text"
-            readonly
-            [value]="preTicket?.quantidadeTotal ?? ''"
-          />
+          <input type="text" readonly [value]="preTicket?.quantidadeTotal ?? ''" />
         </div>
 
         <div class="form-field">
           <label>Embalagem</label>
 
-          <input
-            type="text"
-            readonly
-            [value]="preTicket?.codigoEmbalagem ?? ''"
-          />
+          <input type="text" readonly [value]="preTicket?.codigoEmbalagem ?? ''" />
         </div>
 
         <div class="form-field">
           <label>Sequência</label>
 
-          <input
-            type="text"
-            readonly
-            [value]="preTicket?.numeroSequencia ?? ''"
-          />
+          <input type="text" readonly [value]="preTicket?.numeroSequencia ?? ''" />
         </div>
 
         <!-- Dados da pesagem de origem da XFER -->
-        <section
-          class="origin-data"
-          *ngIf="exibirDadosOrigem"
-        >
-          <div class="origin-data__title">
-            Dados da pesagem de origem
-          </div>
+        <section class="origin-data" *ngIf="exibirDadosOrigem">
+          <div class="origin-data__title">Dados da pesagem de origem</div>
 
           <div class="origin-data__fields">
             <div class="origin-field">
@@ -286,9 +200,7 @@
             <div class="origin-field">
               <label>Peso líquido da origem</label>
 
-              <span>
-                {{ preTicket?.pesoLiquidoOrigem }} kg
-              </span>
+              <span> {{ preTicket?.pesoLiquidoOrigem }} kg </span>
             </div>
           </div>
         </section>
@@ -296,11 +208,7 @@
         <div class="form-field future-field">
           <label>Operador</label>
 
-          <input
-            type="text"
-            disabled
-            placeholder="Integração futura"
-          />
+          <input type="text" disabled placeholder="Integração futura" />
         </div>
 
         <div class="form-field full-field future-field">
@@ -317,13 +225,10 @@
 
     <!-- Área inferior da pesagem -->
     <section class="weighing-area">
-
       <!-- Indicador de peso -->
       <div class="weight-panel">
         <div class="panel-heading">
-          <span class="panel-heading-icon">
-            ⚖
-          </span>
+          <span class="panel-heading-icon"> ⚖ </span>
 
           <h2>Indicador de Peso</h2>
         </div>
@@ -333,25 +238,24 @@
             {{ pesoAtual | number: '1.0-0' : 'pt-BR' }}
           </div>
 
-          <span class="digital-unit">
-            Kg
-          </span>
+          <span class="digital-unit"> Kg </span>
 
           <div class="scale-status">
             <span
               class="scale-status-dot"
-              [class.unstable]="!pesoEstavel"
+              [class.connecting]="indicadorConectando"
+              [class.disconnected]="!indicadorConectando && !indicadorConectado"
             ></span>
 
-            <strong>Balança 01</strong>
-
-            <span class="status-separator">
-              •
-            </span>
-
             <span>
-              {{ pesoEstavel ? 'Estável' : 'Variando' }}
+              {{ textoStatusIndicador }}
             </span>
+
+            @if (indicadorConectado) {
+              <span class="status-separator"> • </span>
+
+              <span> Estável </span>
+            }
           </div>
         </div>
       </div>
@@ -364,9 +268,7 @@
 
         <div class="summary-grid">
           <div class="summary-card first-weighing">
-            <span class="summary-label">
-              ⚖ Pesagem 1
-            </span>
+            <span class="summary-label"> ⚖ Pesagem 1 </span>
 
             <strong>
               {{ pesagem1 | number: '1.0-0' : 'pt-BR' }}
@@ -376,9 +278,7 @@
           </div>
 
           <div class="summary-card second-weighing">
-            <span class="summary-label">
-              ⚖ Pesagem 2
-            </span>
+            <span class="summary-label"> ⚖ Pesagem 2 </span>
 
             <strong>
               {{ pesagem2 | number: '1.0-0' : 'pt-BR' }}
@@ -388,9 +288,7 @@
           </div>
 
           <div class="summary-card net-weight">
-            <span class="summary-label">
-              ▣ Peso Líquido
-            </span>
+            <span class="summary-label"> ▣ Peso Líquido </span>
 
             <strong>
               {{ pesoLiquido | number: '1.0-0' : 'pt-BR' }}
@@ -400,9 +298,7 @@
           </div>
 
           <div class="summary-card dry-weight">
-            <span class="summary-label">
-              ▣ Peso Seco
-            </span>
+            <span class="summary-label"> ▣ Peso Seco </span>
 
             <strong>
               {{ pesoSeco | number: '1.0-0' : 'pt-BR' }}
@@ -417,22 +313,16 @@
 
   <!-- Painel lateral direito -->
   <aside class="right-panel">
-
     <!-- Fila de veículos -->
     <section class="queue-card">
       <div class="queue-header">
         <div class="queue-title">
-          <img
-            src="/images/truck.svg"
-            alt=""
-          />
+          <img src="/images/truck.svg" alt="" />
 
           <h2>Veículos na Fila</h2>
         </div>
 
-        <span class="queue-count">
-          5
-        </span>
+        <span class="queue-count"> 5 </span>
       </div>
 
       <div class="queue-list">
@@ -475,132 +365,72 @@
       <div class="queue-footer">
         <span>Atualizado há 1 min</span>
 
-        <button
-          type="button"
-          class="refresh-button"
-          title="Atualizar fila"
-        >
-          ↻
-        </button>
+        <button type="button" class="refresh-button" title="Atualizar fila">↻</button>
       </div>
     </section>
 
     <!-- Ações da pesagem -->
     <section class="action-card">
-
       <!-- Resumo -->
-      <button
-        type="button"
-        class="action-button"
-      >
+      <button type="button" class="action-button">
         <span class="action-icon-box">
-          <img
-            src="/images/resumo_pesagem.svg"
-            alt=""
-            class="action-image large-side-icon"
-          />
+          <img src="/images/resumo_pesagem.svg" alt="" class="action-image large-side-icon" />
         </span>
 
-        <span class="action-label">
-          Resumo Pesagem
-        </span>
+        <span class="action-label"> Resumo Pesagem </span>
 
         <kbd>F2</kbd>
       </button>
 
       <!-- Impressão -->
-      <button
-        type="button"
-        class="action-button"
-      >
+      <button type="button" class="action-button">
         <span class="action-icon-box">
-          <img
-            src="/images/imprimir-pesagem.svg"
-            alt=""
-            class="action-image large-side-icon"
-          />
+          <img src="/images/imprimir-pesagem.svg" alt="" class="action-image large-side-icon" />
         </span>
 
-        <span class="action-label">
-          Impr. Pesagem
-        </span>
+        <span class="action-label"> Impr. Pesagem </span>
 
         <kbd>F5</kbd>
       </button>
 
       <!-- Nova pesagem -->
-      <button
-        type="button"
-        class="action-button"
-        (click)="novaPesagem()"
-      >
-        <span class="action-icon-box action-symbol">
-          +
-        </span>
+      <button type="button" class="action-button" (click)="novaPesagem()">
+        <span class="action-icon-box action-symbol"> + </span>
 
-        <span class="action-label">
-          Nova Pesagem
-        </span>
+        <span class="action-label"> Nova Pesagem </span>
 
         <kbd>F6</kbd>
       </button>
 
       <!-- Salvar -->
-      <button
-        type="button"
-        class="action-button"
-      >
+      <button type="button" class="action-button">
         <span class="action-icon-box">
-          <img
-            src="/images/salvar-pesagem.svg"
-            alt=""
-            class="action-image large-side-icon"
-          />
+          <img src="/images/salvar-pesagem.svg" alt="" class="action-image large-side-icon" />
         </span>
 
-        <span class="action-label">
-          Salvar Pesagem
-        </span>
+        <span class="action-label"> Salvar Pesagem </span>
 
         <kbd>F7</kbd>
       </button>
 
       <!-- Peso manual -->
-      <button
-        type="button"
-        class="action-button manual-action"
-      >
+      <button type="button" class="action-button manual-action">
         <span class="action-icon-box">
-          <img
-            src="/images/truck.svg"
-            alt=""
-            class="action-image manual-truck-icon"
-          />
+          <img src="/images/truck.svg" alt="" class="action-image manual-truck-icon" />
         </span>
 
-        <span class="action-label">
-          Peso Manual
-        </span>
+        <span class="action-label"> Peso Manual </span>
 
         <kbd>F11</kbd>
       </button>
 
       <!-- Pesagem -->
-      <button
-        type="button"
-        class="action-button active-action"
-      >
+      <button type="button" class="action-button active-action">
         <span class="action-icon-box">
-          <img
-            src="/images/truck.svg"
-            alt=""
-            class="action-image active-truck-icon"
-          />
+          <img src="/images/truck.svg" alt="" class="action-image active-truck-icon" />
         </span>
 
-        <span class="action-label">
-          Pesagem
-        </span>
+        <span class="action-label"> Pesagem </span>
 
         <kbd>F12</kbd>
       </button>
