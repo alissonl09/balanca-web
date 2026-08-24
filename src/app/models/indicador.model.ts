@@ -2,27 +2,15 @@
 // Tipos gerais
 // =========================================================
 
-export type TipoComunicacaoIndicador =
-  | 'SERIAL'
-  | 'TCP_IP';
+export type TipoComunicacaoIndicador = 'SERIAL' | 'TCP_IP';
 
-export type ParidadeSerial =
-  | 'NONE'
-  | 'EVEN'
-  | 'ODD';
+export type ParidadeSerial = 'NONE' | 'EVEN' | 'ODD';
 
-export type ControleFluxoSerial =
-  | 'NONE'
-  | 'RTS_CTS'
-  | 'XON_XOFF';
+export type ControleFluxoSerial = 'NONE' | 'RTS_CTS' | 'XON_XOFF';
 
-export type ModoTcp =
-  | 'CLIENT'
-  | 'SERVER';
+export type ModoTcp = 'CLIENT' | 'SERVER';
 
-export type FinalidadeConexaoIndicador =
-  | 'TESTE'
-  | 'OPERACIONAL';
+export type FinalidadeConexaoIndicador = 'TESTE' | 'OPERACIONAL';
 
 
 // =========================================================
@@ -30,6 +18,7 @@ export type FinalidadeConexaoIndicador =
 // =========================================================
 
 export interface ConfiguracaoSerialIndicador {
+
   tipo: 'SERIAL';
 
   portaSerial: string;
@@ -43,6 +32,7 @@ export interface ConfiguracaoSerialIndicador {
   bitsParada: number;
 
   controleFluxo: ControleFluxoSerial;
+
 
   /*
    * Informações opcionais utilizadas para ajudar
@@ -60,6 +50,7 @@ export interface ConfiguracaoSerialIndicador {
 // =========================================================
 
 export interface ConfiguracaoTcpIndicador {
+
   tipo: 'TCP_IP';
 
   modoTcp: ModoTcp;
@@ -130,8 +121,7 @@ export interface IndicadorPesoConfiguracao {
    *
    * Pode ser Serial ou TCP/IP.
    */
-  comunicacao:
-    ConfiguracaoComunicacaoIndicador;
+  comunicacao: ConfiguracaoComunicacaoIndicador;
 }
 
 
@@ -236,6 +226,5 @@ export interface EstadoIndicadorPeso {
   /*
    * Última leitura conhecida deste indicador.
    */
-  leitura:
-    LeituraIndicadorPeso;
+  leitura: LeituraIndicadorPeso;
 }

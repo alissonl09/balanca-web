@@ -3,6 +3,7 @@
   width: 100%;
 }
 
+
 /* =========================================================
    Página de Configurações
    ========================================================= */
@@ -15,11 +16,16 @@
 
 .settings-card {
   width: 100%;
+
   background: #ffffff;
+
   border-radius: 14px;
+
   padding: 26px;
+
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
 }
+
 
 /* =========================================================
    Cabeçalho
@@ -40,9 +46,13 @@
 .settings-title-icon {
   width: 44px;
   height: 44px;
+
   flex-shrink: 0;
+
   border-radius: 9px;
+
   background: #e5eeeb;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -51,6 +61,7 @@
 .settings-title-icon img {
   width: 27px;
   height: 27px;
+
   object-fit: contain;
 
   filter:
@@ -66,15 +77,20 @@
 
 .settings-title h1 {
   margin: 0;
+
   color: #212529;
+
   font-size: 28px;
 }
 
 .settings-title p {
   margin: 4px 0 0;
+
   color: #6c757d;
+
   font-size: 13px;
 }
+
 
 /* =========================================================
    Abas de Configuração
@@ -82,34 +98,47 @@
 
 .settings-tabs {
   margin-top: 22px;
+
   display: flex;
   align-items: flex-end;
+
   gap: 4px;
+
   border-bottom: 1px solid #dee2e6;
 }
 
 .settings-tab {
   min-height: 43px;
+
   padding: 0 18px;
+
   border: none;
   border-bottom: 3px solid transparent;
+
   background: transparent;
+
   color: #687178;
+
   font-size: 13px;
   font-weight: 600;
+
   cursor: pointer;
 }
 
 .settings-tab:hover {
   color: #00543c;
+
   background: #f7faf8;
 }
 
 .settings-tab.active {
   color: #00543c;
+
   border-bottom-color: #00543c;
+
   background: #f7faf8;
 }
+
 
 /* =========================================================
    Conteúdo da aba
@@ -125,15 +154,20 @@
 
 .settings-section-header h2 {
   margin: 0;
+
   color: #27453d;
+
   font-size: 19px;
 }
 
 .settings-section-header p {
   margin: 4px 0 0;
+
   color: #6c757d;
+
   font-size: 13px;
 }
+
 
 /* =========================================================
    Grupos de configuração
@@ -141,9 +175,12 @@
 
 .config-group {
   margin-top: 14px;
+
   padding: 16px;
+
   border: 1px solid #dee2e6;
   border-radius: 9px;
+
   background: #ffffff;
 }
 
@@ -153,15 +190,20 @@
 
 .config-group-title h3 {
   margin: 0;
+
   color: #27453d;
+
   font-size: 15px;
 }
 
 .config-group-title p {
   margin: 4px 0 0;
+
   color: #7a8388;
+
   font-size: 12px;
 }
+
 
 /* =========================================================
    Tipo de comunicação
@@ -169,21 +211,32 @@
 
 .communication-options {
   display: grid;
-  grid-template-columns: repeat(2, minmax(260px, 1fr));
+
+  grid-template-columns:
+    repeat(2, minmax(260px, 1fr));
+
   gap: 12px;
 }
 
 .communication-option {
   min-height: 74px;
+
   padding: 13px 15px;
+
   border: 1px solid #ced4da;
   border-radius: 8px;
+
   background: #ffffff;
+
   display: flex;
   align-items: center;
+
   gap: 12px;
+
   text-align: left;
+
   cursor: pointer;
+
   transition:
     border-color 0.15s ease,
     background 0.15s ease,
@@ -192,21 +245,28 @@
 
 .communication-option:hover {
   border-color: #8eb8a6;
+
   background: #f8fbf9;
 }
 
 .communication-option.active {
   border-color: #00543c;
+
   background: #f2f8f5;
-  box-shadow: 0 0 0 1px rgba(0, 84, 60, 0.08);
+
+  box-shadow:
+    0 0 0 1px rgba(0, 84, 60, 0.08);
 }
 
 .communication-option-marker {
   width: 20px;
   height: 20px;
+
   flex-shrink: 0;
+
   border: 2px solid #adb5bd;
   border-radius: 50%;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -215,41 +275,48 @@
 .communication-option-marker span {
   width: 10px;
   height: 10px;
+
   border-radius: 50%;
+
   background: transparent;
 }
 
 .communication-option.active
-  .communication-option-marker {
+.communication-option-marker {
   border-color: #00543c;
 }
 
 .communication-option.active
-  .communication-option-marker span {
+.communication-option-marker span {
   background: #00543c;
 }
 
 .communication-option-text {
   min-width: 0;
+
   display: flex;
   flex-direction: column;
+
   gap: 4px;
 }
 
 .communication-option-text strong {
   color: #343a40;
+
   font-size: 14px;
 }
 
 .communication-option.active
-  .communication-option-text strong {
+.communication-option-text strong {
   color: #00543c;
 }
 
 .communication-option-text span {
   color: #6c757d;
+
   font-size: 12px;
 }
+
 
 /* =========================================================
    Campos
@@ -257,7 +324,10 @@
 
 .config-fields {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
   gap: 12px;
 }
 
@@ -267,25 +337,23 @@
 
 .serial-fields {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
   gap: 12px 16px;
 }
 
 .config-field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-}
 
-.config-field-hint {
-  margin-top: 1px;
-  color: #7a8388;
-  font-size: 11px;
-  line-height: 1.3;
+  gap: 5px;
 }
 
 .config-field label {
   color: #495057;
+
   font-size: 12px;
   font-weight: 600;
 }
@@ -294,12 +362,18 @@
 .config-field select {
   width: 100%;
   min-height: 39px;
+
   padding: 8px 10px;
+
   border: 1px solid #ced4da;
   border-radius: 7px;
+
   background: #ffffff;
+
   color: #343a40;
+
   font-size: 14px;
+
   outline: none;
 }
 
@@ -310,8 +384,20 @@
 .config-field input:focus,
 .config-field select:focus {
   border-color: #00543c;
-  box-shadow: 0 0 0 3px rgba(0, 84, 60, 0.10);
+
+  box-shadow:
+    0 0 0 3px rgba(0, 84, 60, 0.10);
 }
+
+.config-field-hint {
+  margin-top: 2px;
+
+  color: #7a8388;
+
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 
 /* =========================================================
    Teste de Comunicação
@@ -323,8 +409,10 @@
 
 .communication-status {
   padding: 13px;
+
   border: 1px solid #e0e4e5;
   border-radius: 8px;
+
   background: #ffffff;
 }
 
@@ -332,72 +420,212 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+
+  gap: 16px;
 }
 
 .status-information {
   display: flex;
   align-items: center;
+
   gap: 8px;
+
+  color: #4f575b;
+
+  font-size: 13px;
 }
 
 .status-information strong {
   color: #596167;
+
   font-size: 13px;
 }
 
 .connection-dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
+
   flex-shrink: 0;
+
   border-radius: 50%;
-  background: #adb5bd;
+
+  background: #c03b44;
+
+  box-shadow:
+    0 0 0 3px rgba(192, 59, 68, 0.12);
 }
+
+.connection-dot.connected {
+  background: #1d7a57;
+
+  box-shadow:
+    0 0 0 3px rgba(29, 122, 87, 0.14);
+}
+
+
+/* =========================================================
+   Botão do teste
+   ========================================================= */
 
 .test-connection-button {
+  min-width: 150px;
   min-height: 36px;
-  padding: 7px 14px;
-  border: 1px solid #00543c;
-  border-radius: 7px;
+
+  padding: 8px 14px;
+
+  border: 1px solid #1d6b4d;
+  border-radius: 6px;
+
   background: #ffffff;
-  color: #00543c;
+
+  color: #1d6b4d;
+
   font-size: 12px;
   font-weight: 600;
+
   cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
-.test-connection-button:hover {
-  background: #f1f7f4;
+.test-connection-button:hover:not(:disabled) {
+  background: #1d6b4d;
+
+  color: #ffffff;
 }
+
+.test-connection-button.disconnect {
+  border-color: #b33b43;
+
+  color: #9d2f37;
+}
+
+.test-connection-button.disconnect:hover:not(:disabled) {
+  background: #b33b43;
+
+  color: #ffffff;
+}
+
+.test-connection-button:disabled {
+  opacity: 0.6;
+
+  cursor: default;
+}
+
+
+/* =========================================================
+   Mensagem do teste
+   ========================================================= */
+
+.communication-test-message {
+  margin-top: 12px;
+
+  padding: 9px 11px;
+
+  border: 1px solid #d9dedb;
+  border-radius: 6px;
+
+  background: #f7f9f8;
+
+  color: #596167;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   Resultado do teste
+   ========================================================= */
 
 .communication-result {
   margin-top: 12px;
+
   display: grid;
-  grid-template-columns: 2fr 1fr;
+
+  grid-template-columns:
+    minmax(0, 1fr) 180px;
+
   gap: 12px;
 }
 
 .communication-result-item {
+  min-width: 0;
   min-height: 62px;
+
   padding: 10px 12px;
-  border: 1px solid #e4e7e8;
+
+  border: 1px solid #e0e4e2;
   border-radius: 7px;
-  background: #f8f9fa;
+
+  background: #fafbfa;
+
   display: flex;
   flex-direction: column;
   justify-content: center;
+
   gap: 5px;
 }
 
 .communication-result-item span {
-  color: #747d82;
+  color: #757d81;
+
   font-size: 11px;
+  font-weight: 500;
 }
 
 .communication-result-item strong {
-  color: #343a40;
-  font-size: 14px;
+  color: #30373a;
+
+  font-size: 13px;
 }
+
+.received-data {
+  overflow-wrap: anywhere;
+
+  white-space: pre-wrap;
+
+  font-family:
+    Consolas,
+    "Courier New",
+    monospace;
+}
+
+
+/* =========================================================
+   Mensagens da configuração
+   ========================================================= */
+
+.settings-message {
+  margin-top: 14px;
+
+  padding: 11px 13px;
+
+  border: 1px solid transparent;
+  border-radius: 7px;
+
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.settings-message.success {
+  color: #00543c;
+
+  background: #e7f4ed;
+
+  border-color: #b8d9c8;
+}
+
+.settings-message.error {
+  color: #842029;
+
+  background: #f8d7da;
+
+  border-color: #f1aeb5;
+}
+
 
 /* =========================================================
    Botões finais
@@ -405,26 +633,36 @@
 
 .settings-actions {
   margin-top: 16px;
+
   padding-top: 15px;
+
   border-top: 1px solid #dee2e6;
+
   display: flex;
   justify-content: flex-end;
+
   gap: 10px;
 }
 
 .primary-button,
 .secondary-button {
   min-height: 40px;
+
   padding: 8px 18px;
+
   border-radius: 7px;
+
   font-size: 13px;
   font-weight: 600;
+
   cursor: pointer;
 }
 
 .primary-button {
   border: 1px solid #00543c;
+
   background: #00543c;
+
   color: #ffffff;
 }
 
@@ -434,7 +672,9 @@
 
 .secondary-button {
   border: 1px solid #ced4da;
+
   background: #ffffff;
+
   color: #495057;
 }
 
@@ -442,11 +682,258 @@
   background: #f5f6f7;
 }
 
+
+/* =========================================================
+   Vinculação da porta Serial
+   ========================================================= */
+
+.serial-port-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr) auto;
+
+  gap: 10px;
+
+  align-items: center;
+}
+
+.serial-port-row select {
+  width: 100%;
+}
+
+.link-port-button {
+  min-height: 38px;
+
+  padding: 0 13px;
+
+  border: 1px solid #b9cec5;
+  border-radius: 6px;
+
+  background: #ffffff;
+
+  color: #00543c;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.link-port-button:hover:not(:disabled) {
+  background: #edf5f1;
+
+  border-color: #7eaa98;
+}
+
+.link-port-button:disabled {
+  background: #f5f6f6;
+
+  border-color: #d8dddb;
+
+  color: #9aa19e;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   Status da porta Serial vinculada
+   ========================================================= */
+
+.port-linked-status {
+  min-height: 38px;
+
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  border: 1px solid #b8d9c8;
+  border-radius: 6px;
+
+  background: #eef8f3;
+
+  color: #00543c;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.port-linked-icon {
+  width: 18px;
+  height: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #1d7a57;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   Configuração Serial compacta
+   ========================================================= */
+
+.serial-compact-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(320px, 1.2fr)
+    minmax(300px, 1fr);
+
+  gap: 16px;
+
+  align-items: start;
+}
+
+
+/* =========================================================
+   Resumo dos parâmetros Serial
+   ========================================================= */
+
+.serial-parameters-card {
+  min-height: 78px;
+
+  padding: 12px 14px;
+
+  border: 1px solid #d9e1de;
+  border-radius: 7px;
+
+  background: #f8faf9;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  gap: 11px;
+}
+
+.serial-parameters-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+.serial-parameters-header > div {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.serial-parameters-label {
+  color: #6d7672;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.serial-parameters-value {
+  color: #253f37;
+
+  font-family:
+    Consolas,
+    "Courier New",
+    monospace;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   Origem dos parâmetros
+   ========================================================= */
+
+.serial-parameters-origin {
+  padding: 4px 8px;
+
+  border: 1px solid #bcd4ca;
+  border-radius: 12px;
+
+  background: #eaf4ef;
+
+  color: #00543c;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   Informação dos parâmetros definidos pelo modelo
+   ========================================================= */
+
+.serial-parameters-hint {
+  padding-top: 9px;
+
+  border-top: 1px solid #e2e7e5;
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color: #747d79;
+
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.serial-parameters-hint-icon {
+  width: 16px;
+  height: 16px;
+
+  flex: 0 0 16px;
+
+  border: 1px solid #a9c2b7;
+  border-radius: 50%;
+
+  color: #00543c;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
 /* =========================================================
    Desktop com pouca altura
    ========================================================= */
 
 @media (min-width: 1251px) and (max-height: 950px) {
+
   .settings-card {
     padding: 16px 20px;
   }
@@ -469,6 +956,7 @@
 
   .config-group {
     margin-top: 9px;
+
     padding: 10px 14px;
   }
 
@@ -478,12 +966,14 @@
 
   .communication-option {
     min-height: 60px;
+
     padding: 9px 12px;
   }
 
   .config-field input,
   .config-field select {
     min-height: 35px;
+
     padding-top: 6px;
     padding-bottom: 6px;
   }
@@ -498,20 +988,32 @@
 
   .communication-result-item {
     min-height: 50px;
+
     padding: 7px 10px;
   }
 
   .settings-actions {
     margin-top: 10px;
+
     padding-top: 10px;
   }
 }
+
 
 /* =========================================================
    Responsividade
    ========================================================= */
 
+@media (max-width: 950px) {
+
+  .serial-compact-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 @media (max-width: 900px) {
+
   .settings-card {
     padding: 18px;
   }
@@ -540,8 +1042,13 @@
   }
 
   .communication-status-header {
-    align-items: flex-start;
+    align-items: stretch;
+
     flex-direction: column;
+  }
+
+  .test-connection-button {
+    width: 100%;
   }
 
   .settings-actions {
@@ -554,253 +1061,9 @@
   }
 }
 
-/* =========================================================
-   Mensagens da configuração
-   ========================================================= */
-
-.settings-message {
-  margin-top: 14px;
-  padding: 11px 13px;
-  border: 1px solid transparent;
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.settings-message.success {
-  color: #00543c;
-  background: #e7f4ed;
-  border-color: #b8d9c8;
-}
-
-.settings-message.error {
-  color: #842029;
-  background: #f8d7da;
-  border-color: #f1aeb5;
-}
-
-/* =========================================================
-   Teste de comunicação
-   ========================================================= */
-
-.communication-status-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.status-information {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  color: #4f575b;
-  font-size: 13px;
-}
-
-.connection-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #c03b44;
-
-  box-shadow:
-    0 0 0 3px rgba(192, 59, 68, 0.12);
-}
-
-.connection-dot.connected {
-  background: #1d7a57;
-
-  box-shadow:
-    0 0 0 3px rgba(29, 122, 87, 0.14);
-}
-
-
-/* Botão de teste */
-
-.test-connection-button {
-  min-width: 150px;
-  padding: 8px 14px;
-
-  border: 1px solid #1d6b4d;
-  border-radius: 6px;
-
-  background: #ffffff;
-  color: #1d6b4d;
-
-  font-size: 12px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.test-connection-button:hover:not(:disabled) {
-  background: #1d6b4d;
-  color: #ffffff;
-}
-
-.test-connection-button.disconnect {
-  border-color: #b33b43;
-  color: #9d2f37;
-}
-
-.test-connection-button.disconnect:hover:not(:disabled) {
-  background: #b33b43;
-  color: #ffffff;
-}
-
-.test-connection-button:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-
-/* Mensagem do teste */
-
-.communication-test-message {
-  margin-top: 12px;
-  padding: 9px 11px;
-
-  border: 1px solid #d9dedb;
-  border-radius: 6px;
-
-  background: #f7f9f8;
-
-  color: #596167;
-  font-size: 12px;
-}
-
-
-/* Resultado recebido */
-
-.communication-result {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 180px;
-  gap: 12px;
-
-  margin-top: 12px;
-}
-
-.communication-result-item {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-
-  min-width: 0;
-
-  padding: 10px 12px;
-
-  border: 1px solid #e0e4e2;
-  border-radius: 6px;
-
-  background: #fafbfa;
-}
-
-.communication-result-item span {
-  color: #757d81;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.communication-result-item strong {
-  color: #30373a;
-  font-size: 13px;
-}
-
-.received-data {
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-  font-family: Consolas, "Courier New", monospace;
-}
-
-
-/* Responsivo */
-
-@media (max-width: 900px) {
-  .communication-status-header {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .test-connection-button {
-    width: 100%;
-  }
-
-  .communication-result {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* =========================================================
-   Vinculação da porta Serial
-   ========================================================= */
-
-.serial-port-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
-  align-items: center;
-}
-
-.serial-port-row select {
-  width: 100%;
-}
-
-.link-port-button {
-  min-height: 38px;
-  padding: 0 13px;
-
-  border: 1px solid #b9cec5;
-  border-radius: 6px;
-
-  background: #ffffff;
-  color: #00543c;
-
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-
-  cursor: pointer;
-
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.link-port-button:hover:not(:disabled) {
-  background: #edf5f1;
-  border-color: #7eaa98;
-}
-
-.link-port-button:disabled {
-  background: #f5f6f6;
-  border-color: #d8dddb;
-  color: #9aa19e;
-
-  cursor: not-allowed;
-}
-
-.config-field-hint {
-  margin-top: 2px;
-
-  color: #7a8388;
-  font-size: 11px;
-  line-height: 1.35;
-}
-
-
-/* =========================================================
-   Responsivo
-   ========================================================= */
 
 @media (max-width: 700px) {
+
   .serial-port-row {
     grid-template-columns: 1fr;
   }
@@ -810,43 +1073,16 @@
   }
 }
 
-/* =========================================================
-   Status da porta Serial vinculada
-   ========================================================= */
 
-.port-linked-status {
-  min-height: 38px;
-  padding: 0 12px;
+@media (max-width: 600px) {
 
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  .serial-parameters-header {
+    align-items: flex-start;
 
-  border: 1px solid #b8d9c8;
-  border-radius: 6px;
+    flex-direction: column;
+  }
 
-  background: #eef8f3;
-  color: #00543c;
-
-  font-size: 12px;
-  font-weight: 600;
-
-  white-space: nowrap;
-}
-
-.port-linked-icon {
-  width: 18px;
-  height: 18px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background: #1d7a57;
-  color: #ffffff;
-
-  font-size: 11px;
-  font-weight: 700;
+  .serial-parameters-value {
+    white-space: normal;
+  }
 }

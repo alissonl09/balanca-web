@@ -14,91 +14,75 @@ import {
   TipoComunicacaoIndicador,
 } from '../../models/indicador.model';
 
+import { ModeloIndicador } from '../../models/modelo-indicador.model';
+
 import { IndicadorPesoService } from '../../services/indicador-peso.service';
 
-// =========================================================
-// Modelo antigo salvo no localStorage
-//
-// Mantemos temporariamente para migrar automaticamente
-// a configuração que você já salvou anteriormente.
-// =========================================================
+import { ModeloIndicadorService } from '../../services/modelo-indicador.service';
 
-interface ConfiguracaoIndicadorLegada {
-  tipoComunicacao: TipoComunicacaoIndicador;
+import { ModelosIndicadores } from './modelos-indicadores/modelos-indicadores';
 
-  modeloIndicador: string;
-
-  portaSerial?: string;
-  velocidadeSerial?: number;
-  bitsDados?: number;
-  paridade?: ParidadeSerial;
-  bitsParada?: number;
-  controleFluxo?: ControleFluxoSerial;
-
-  modoTcp?: ModoTcp;
-  enderecoIp?: string;
-  portaTcp?: number | null;
-  timeoutTcp?: number;
-  reconexaoAutomatica?: boolean;
-}
+type AbaConfiguracoes = 'INDICADORES' | 'MODELOS';
 
 @Component({
   selector: 'app-configuracoes',
+
   standalone: true,
 
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ModelosIndicadores],
 
   templateUrl: './configuracoes.html',
+
   styleUrl: './configuracoes.css',
 })
 export class Configuracoes implements OnInit, OnDestroy {
   // =========================================================
-  // Identificação do indicador atual
+  // Identificação do indicador
   // =========================================================
 
-  /*
-   * Hoje temos somente um indicador.
-   *
-   * Futuramente poderemos ter:
-   *
-   * indicador-principal
-   * indicador-entrada
-   * indicador-saida
-   * etc.
-   */
   private readonly idIndicador = 'indicador-principal';
 
   private readonly nomeIndicador = 'Indicador principal';
 
   // =========================================================
-  // LocalStorage
+  // Persistência temporária
   // =========================================================
 
-  private readonly storageKey = 'balanca-configuracao-indicador';
+  private readonly storageKeyIndicador = 'balanca-configuracao-indicador';
 
   // =========================================================
-  // Subscription do estado
+  // Navegação das configurações
   // =========================================================
 
-  private estadoIndicadorSubscription: Subscription | null = null;
+  abaSelecionada: AbaConfiguracoes = 'INDICADORES';
+
+  get abaIndicadoresSelecionada(): boolean {
+    return this.abaSelecionada === 'INDICADORES';
+  }
+
+  get abaModelosSelecionada(): boolean {
+    return this.abaSelecionada === 'MODELOS';
+  }
+
+  // =========================================================
+  // Catálogo de modelos
+  // =========================================================
+
+  modelosIndicadores: ModeloIndicador[] = [];
+
+  private modelosIndicadoresSubscription: Subscription | null = null;
+
+  // =========================================================
+  // Modelo selecionado
+  // =========================================================
+
+  modeloIndicador = '';
 
   // =========================================================
   // Tipo de comunicação
   // =========================================================
 
   tipoComunicacao: TipoComunicacaoIndicador = 'SERIAL';
-
-  selecionarComunicacao(tipo: TipoComunicacaoIndicador): void {
-    this.tipoComunicacao = tipo;
-
-    if (tipo === 'TCP_IP') {
-      this.portaSerialAutorizada = false;
-    }
-
-    this.limparMensagem();
-
-    this.mensagemTesteComunicacao = '';
-  }
 
   get comunicacaoSerialSelecionada(): boolean {
     return this.tipoComunicacao === 'SERIAL';
@@ -109,20 +93,17 @@ export class Configuracoes implements OnInit, OnDestroy {
   }
 
   // =========================================================
-  // Indicador
+  // Configuração Serial
   // =========================================================
 
-  modeloIndicador = '';
-
-  // =========================================================
-  // Serial
-  // =========================================================
+  portasSeriais: string[] = Array.from(
+    {
+      length: 15,
+    },
+    (_, indice) => `COM${indice + 1}`,
+  );
 
   portaSerial = '';
-
-  portaSerialAutorizada = false;
-
-  readonly portasSeriais: string[] = Array.from({ length: 15 }, (_, indice) => `COM${indice + 1}`);
 
   velocidadeSerial = 4800;
 
@@ -134,8 +115,48 @@ export class Configuracoes implements OnInit, OnDestroy {
 
   controleFluxo: ControleFluxoSerial = 'NONE';
 
+  portaSerialAutorizada = false;
+
+  /*
+   * Identificação física do dispositivo
+   * autorizado pelo Web Serial.
+   */
+  private usbVendorId: number | undefined;
+
+  private usbProductId: number | undefined;
+
   // =========================================================
-  // TCP/IP
+  // Resumo da configuração Serial
+  // =========================================================
+
+  get resumoConfiguracaoSerial(): string {
+    const paridades: Record<ParidadeSerial, string> = {
+      NONE: 'N',
+
+      EVEN: 'E',
+
+      ODD: 'O',
+    };
+
+    const controlesFluxo: Record<ControleFluxoSerial, string> = {
+      NONE: 'Nenhum',
+
+      RTS_CTS: 'RTS/CTS',
+
+      XON_XOFF: 'XON/XOFF',
+    };
+
+    return (
+      `${this.velocidadeSerial}, ` +
+      `${paridades[this.paridade]}, ` +
+      `${this.bitsDados}, ` +
+      `${this.bitsParada}, ` +
+      `${controlesFluxo[this.controleFluxo]}`
+    );
+  }
+
+  // =========================================================
+  // Configuração TCP/IP
   // =========================================================
 
   modoTcp: ModoTcp = 'CLIENT';
@@ -144,29 +165,12 @@ export class Configuracoes implements OnInit, OnDestroy {
 
   portaTcp: number | null = null;
 
-  timeoutTcp = 5;
+  timeoutTcp = 10;
 
   reconexaoAutomatica = true;
 
   // =========================================================
-  // Mensagens da configuração
-  // =========================================================
-
-  mensagemConfiguracao = '';
-
-  tipoMensagemConfiguracao: 'sucesso' | 'erro' | '' = '';
-
-  // =========================================================
-  // Configuração salva
-  // =========================================================
-
-  configuracaoSalva: IndicadorPesoConfiguracao | null = null;
-
-  // =========================================================
-  // Estado da comunicação
-  //
-  // Estes campos continuam existindo porque o HTML
-  // já utiliza todos eles.
+  // Teste da comunicação
   // =========================================================
 
   testandoComunicacao = false;
@@ -180,82 +184,305 @@ export class Configuracoes implements OnInit, OnDestroy {
   pesoInterpretado: number | null = null;
 
   // =========================================================
+  // Mensagens
+  // =========================================================
+
+  mensagemConfiguracao = '';
+
+  tipoMensagemConfiguracao: 'sucesso' | 'erro' | '' = '';
+
+  // =========================================================
+  // Subscription do indicador
+  // =========================================================
+
+  private estadoIndicadorSubscription: Subscription | null = null;
+
+  // =========================================================
   // Constructor
   // =========================================================
 
-  constructor(private readonly indicadorPesoService: IndicadorPesoService) {}
+  constructor(
+    private readonly indicadorPesoService: IndicadorPesoService,
+
+    private readonly modeloIndicadorService: ModeloIndicadorService,
+  ) {}
 
   // =========================================================
   // Inicialização
   // =========================================================
 
   ngOnInit(): void {
+    // -------------------------------------------------------
+    // Configuração salva
+    // -------------------------------------------------------
+
     this.carregarConfiguracao();
 
+    // -------------------------------------------------------
+    // Catálogo de modelos
+    // -------------------------------------------------------
+
+    this.modelosIndicadoresSubscription = this.modeloIndicadorService.modelos$.subscribe(
+      (modelos) => {
+        this.modelosIndicadores = modelos.filter((modelo) => modelo.ativo);
+
+        this.normalizarModeloIndicadorSalvo();
+      },
+    );
+
+    // -------------------------------------------------------
+    // Autorização Serial
+    // -------------------------------------------------------
+
     void this.verificarPortaSerialAutorizada();
-    /*
-     * A página passa apenas a acompanhar
-     * o estado mantido pelo serviço.
-     */
+
+    // -------------------------------------------------------
+    // Estado do indicador
+    // -------------------------------------------------------
+
     this.estadoIndicadorSubscription = this.indicadorPesoService
       .obterEstado$(this.idIndicador)
       .subscribe((estado) => {
-        this.testandoComunicacao = estado.conectando;
+        const testeConectando = estado.conectando && estado.finalidadeConexao === 'TESTE';
 
-        this.comunicacaoConectada = estado.conectado;
+        const testeConectado = estado.conectado && estado.finalidadeConexao === 'TESTE';
 
-        this.mensagemTesteComunicacao = estado.mensagem;
+        this.testandoComunicacao = testeConectando;
 
-        this.ultimoDadoRecebido = estado.leitura.dadoBruto;
+        this.comunicacaoConectada = testeConectado;
 
-        /*
-         * O parser ainda será implementado
-         * dentro da camada do indicador.
-         */
-        this.pesoInterpretado = estado.leitura.pesoBruto;
+        if (estado.finalidadeConexao === 'TESTE' || testeConectando || testeConectado) {
+          this.mensagemTesteComunicacao = estado.mensagem;
+        }
+
+        if (testeConectado) {
+          this.ultimoDadoRecebido = estado.leitura.dadoBruto ?? '';
+
+          this.pesoInterpretado = estado.leitura.pesoBruto;
+        }
       });
   }
 
   // =========================================================
-  // Destruição da página
+  // Destruição
   // =========================================================
 
   ngOnDestroy(): void {
-    /*
-     * IMPORTANTE:
-     *
-     * Aqui NÃO desconectamos mais o indicador.
-     *
-     * Apenas paramos de observar o estado dele.
-     *
-     * A conexão pertence ao IndicadorPesoService
-     * e poderá continuar ativa quando navegarmos
-     * para a tela Pesagem.
-     */
-
     this.estadoIndicadorSubscription?.unsubscribe();
+
+    this.estadoIndicadorSubscription = null;
+
+    this.modelosIndicadoresSubscription?.unsubscribe();
+
+    this.modelosIndicadoresSubscription = null;
   }
 
   // =========================================================
-  // Salvar configurações
+  // Navegação entre abas
   // =========================================================
 
-  salvarConfiguracoes(): void {
-    this.limparMensagem();
-
-    const configuracao = this.criarConfiguracaoAtual('configuracao');
-
-    if (!configuracao) {
+  async selecionarAba(aba: AbaConfiguracoes): Promise<void> {
+    if (this.abaSelecionada === aba) {
       return;
     }
 
-    this.configuracaoSalva = configuracao;
+    if (
+      this.abaSelecionada === 'INDICADORES' &&
+      this.indicadorPesoService.possuiTesteAtivo(this.idIndicador)
+    ) {
+      const desejaTrocar = window.confirm(
+        'Existe um teste de comunicação ativo com o indicador.\n\n' +
+          'Ao acessar outra configuração, o teste será desconectado.\n\n' +
+          'Deseja desconectar o teste e continuar?',
+      );
 
-    this.persistirConfiguracao();
+      if (!desejaTrocar) {
+        return;
+      }
 
-    this.indicadorPesoService.registrarIndicador(configuracao);
+      await this.indicadorPesoService.desconectarTeste(this.idIndicador);
+    }
 
-    this.mostrarMensagem('Configurações salvas com sucesso.', 'sucesso');
+    this.abaSelecionada = aba;
+
+    this.limparMensagem();
+
+    this.mensagemTesteComunicacao = '';
+  }
+
+  // =========================================================
+  // Seleção do modelo
+  // =========================================================
+
+  selecionarModeloIndicador(idModelo: string): void {
+    this.modeloIndicador = idModelo;
+
+    this.limparMensagem();
+
+    if (!idModelo) {
+      return;
+    }
+
+    const modelo = this.modeloIndicadorService.obterPorId(idModelo);
+
+    if (!modelo) {
+      return;
+    }
+
+    // -------------------------------------------------------
+    // Comunicação não suportada
+    // -------------------------------------------------------
+
+    if (this.comunicacaoSerialSelecionada && !modelo.suportaSerial && modelo.suportaTcpIp) {
+      this.tipoComunicacao = 'TCP_IP';
+
+      this.portaSerialAutorizada = false;
+    }
+
+    if (this.comunicacaoTcpSelecionada && !modelo.suportaTcpIp && modelo.suportaSerial) {
+      this.tipoComunicacao = 'SERIAL';
+
+      void this.verificarPortaSerialAutorizada();
+    }
+
+    // -------------------------------------------------------
+    // Parâmetros definidos no modelo
+    // -------------------------------------------------------
+
+    this.aplicarConfiguracaoSerialPadraoModelo();
+  }
+
+  // =========================================================
+  // Aplicar configuração Serial definida no modelo
+  // =========================================================
+
+  private aplicarConfiguracaoSerialPadraoModelo(): void {
+    if (!this.modeloIndicador) {
+      return;
+    }
+
+    const modelo = this.modeloIndicadorService.obterPorId(this.modeloIndicador);
+
+    if (!modelo || !modelo.suportaSerial || !modelo.configuracaoSerialPadrao) {
+      return;
+    }
+
+    const serial = modelo.configuracaoSerialPadrao;
+
+    this.velocidadeSerial = serial.velocidadeSerial;
+
+    this.bitsDados = serial.bitsDados;
+
+    this.paridade = serial.paridade;
+
+    this.bitsParada = serial.bitsParada;
+
+    this.controleFluxo = serial.controleFluxo;
+  }
+
+  // =========================================================
+  // Seleção da comunicação
+  // =========================================================
+
+  selecionarComunicacao(tipo: TipoComunicacaoIndicador): void {
+    if (this.tipoComunicacao === tipo) {
+      return;
+    }
+
+    this.tipoComunicacao = tipo;
+
+    this.limparMensagem();
+
+    if (tipo === 'TCP_IP') {
+      this.portaSerialAutorizada = false;
+
+      return;
+    }
+
+    /*
+     * Ao selecionar Serial, garantimos que
+     * os parâmetros estejam iguais aos
+     * definidos no modelo.
+     */
+    this.aplicarConfiguracaoSerialPadraoModelo();
+
+    void this.verificarPortaSerialAutorizada();
+  }
+
+  // =========================================================
+  // Autorizar dispositivo Serial
+  // =========================================================
+
+  async autorizarPortaSerial(): Promise<void> {
+    this.limparMensagem();
+
+    if (!this.comunicacaoSerialSelecionada) {
+      this.definirMensagemConfiguracao('Selecione a comunicação Serial / RS-232.', 'erro');
+
+      return;
+    }
+
+    if (!this.portaSerial) {
+      this.definirMensagemConfiguracao('Selecione a porta COM.', 'erro');
+
+      return;
+    }
+
+    const configuracao = this.criarConfiguracaoAtual();
+
+    try {
+      const resultado = await this.indicadorPesoService.autorizarPortaSerial(configuracao);
+
+      this.usbVendorId = resultado.usbVendorId;
+
+      this.usbProductId = resultado.usbProductId;
+
+      this.portaSerialAutorizada = true;
+
+      const configuracaoAtualizada = this.criarConfiguracaoAtual();
+
+      localStorage.setItem(this.storageKeyIndicador, JSON.stringify(configuracaoAtualizada));
+
+      this.definirMensagemConfiguracao('Dispositivo Serial autorizado com sucesso.', 'sucesso');
+    } catch (erro) {
+      console.error('Erro ao autorizar dispositivo Serial:', erro);
+
+      this.portaSerialAutorizada = false;
+
+      const mensagem =
+        erro instanceof Error ? erro.message : 'Não foi possível autorizar o dispositivo Serial.';
+
+      this.definirMensagemConfiguracao(mensagem, 'erro');
+    }
+  }
+
+  // =========================================================
+  // Verificar autorização Serial
+  // =========================================================
+
+  private async verificarPortaSerialAutorizada(): Promise<void> {
+    if (!this.comunicacaoSerialSelecionada) {
+      this.portaSerialAutorizada = false;
+
+      return;
+    }
+
+    if (!this.portaSerial) {
+      this.portaSerialAutorizada = false;
+
+      return;
+    }
+
+    try {
+      const configuracao = this.criarConfiguracaoAtual();
+
+      this.portaSerialAutorizada =
+        await this.indicadorPesoService.possuiPortaSerialAutorizada(configuracao);
+    } catch (erro) {
+      console.error('Erro ao verificar autorização da porta Serial:', erro);
+
+      this.portaSerialAutorizada = false;
+    }
   }
 
   // =========================================================
@@ -263,244 +490,89 @@ export class Configuracoes implements OnInit, OnDestroy {
   // =========================================================
 
   async testarComunicacao(): Promise<void> {
-    this.mensagemTesteComunicacao = '';
-
-    /*
-     * Caso esteja conectado, o mesmo botão
-     * funciona como Desconectar.
-     */
-    if (this.comunicacaoConectada) {
-      await this.indicadorPesoService.desconectarIndicador(this.idIndicador);
-
-      return;
-    }
-
-    const configuracao = this.criarConfiguracaoAtual('teste');
-
-    if (!configuracao) {
-      return;
-    }
-
-    /*
-     * Aqui NÃO usamos requestPort().
-     *
-     * Portanto esta ação não deve abrir
-     * a janela de seleção do navegador.
-     *
-     * O serviço tentará localizar uma porta
-     * previamente autorizada usando getPorts().
-     */
-    await this.indicadorPesoService.conectarIndicador(configuracao, 'TESTE');
-  }
-
-  // =========================================================
-  // Segurança ao sair da tela de Configurações
-  // =========================================================
-
-  async podeSairDaPagina(): Promise<boolean> {
-    /*
-     * Se não existe um teste ativo,
-     * pode navegar normalmente.
-     */
-    if (!this.indicadorPesoService.possuiTesteAtivo(this.idIndicador)) {
-      return true;
-    }
-
-    /*
-     * Existe uma conexão aberta em modo TESTE.
-     *
-     * Por enquanto utilizamos a confirmação nativa
-     * do navegador. Depois podemos substituir por
-     * uma modal no padrão visual da aplicação.
-     */
-    const desejaSair = window.confirm(
-      'Existe um teste de comunicação ativo com o indicador.\n\n' +
-        'Ao sair da tela, o teste será desconectado.\n\n' +
-        'Deseja desconectar o teste e continuar?',
-    );
-
-    if (!desejaSair) {
-      return false;
-    }
-
-    /*
-     * O serviço possui uma proteção adicional:
-     * desconectarTeste() nunca derruba uma
-     * conexão OPERACIONAL.
-     */
-    await this.indicadorPesoService.desconectarTeste(this.idIndicador);
-
-    return true;
-  }
-
-  // =========================================================
-  // Segurança ao fechar/recarregar o navegador
-  // =========================================================
-
-  @HostListener('window:beforeunload', ['$event'])
-  protegerFechamentoNavegador(event: BeforeUnloadEvent): void {
-    /*
-     * Só mostramos o alerta se existir
-     * uma conexão em modo TESTE.
-     *
-     * Uma conexão OPERACIONAL não deve ser
-     * confundida com o teste da tela.
-     */
-    const testeAtivo = this.indicadorPesoService.possuiTesteAtivo(this.idIndicador);
-
-    if (!testeAtivo) {
-      return;
-    }
-
-    /*
-     * Os navegadores modernos não permitem
-     * personalizar a mensagem desta janela.
-     *
-     * preventDefault + returnValue fazem o
-     * navegador apresentar seu aviso padrão.
-     */
-    event.preventDefault();
-
-    event.returnValue = '';
-  }
-
-  // =========================================================
-  // Verificar autorização da porta Serial
-  // =========================================================
-
-  private async verificarPortaSerialAutorizada(): Promise<void> {
-    if (!this.configuracaoSalva || this.configuracaoSalva.comunicacao.tipo !== 'SERIAL') {
-      this.portaSerialAutorizada = false;
-
-      return;
-    }
-
-    try {
-      this.portaSerialAutorizada = await this.indicadorPesoService.possuiPortaSerialAutorizada(
-        this.configuracaoSalva,
-      );
-    } catch (erro) {
-      console.error('Erro ao verificar autorização da porta serial:', erro);
-
-      this.portaSerialAutorizada = false;
-    }
-  }
-
-  // =========================================================
-  // Autorizar porta Serial
-  //
-  // Este método será ligado ao HTML no próximo passo.
-  //
-  // Somente esta ação poderá abrir a janela nativa
-  // do navegador.
-  // =========================================================
-
-  async autorizarPortaSerial(): Promise<void> {
     this.limparMensagem();
 
-    this.mensagemTesteComunicacao = '';
+    if (this.indicadorPesoService.possuiTesteAtivo(this.idIndicador)) {
+      await this.indicadorPesoService.desconectarTeste(this.idIndicador);
 
-    const configuracao = this.criarConfiguracaoAtual('teste');
+      this.ultimoDadoRecebido = '';
 
-    if (!configuracao) {
-      return;
-    }
-
-    if (configuracao.comunicacao.tipo !== 'SERIAL') {
-      this.mensagemTesteComunicacao =
-        'A autorização de porta é utilizada somente para comunicação Serial.';
+      this.pesoInterpretado = null;
 
       return;
     }
+
+    const mensagemValidacao = this.validarConfiguracao();
+
+    if (mensagemValidacao) {
+      this.mensagemTesteComunicacao = mensagemValidacao;
+
+      return;
+    }
+
+    const configuracao = this.criarConfiguracaoAtual();
+
+    this.ultimoDadoRecebido = '';
+
+    this.pesoInterpretado = null;
 
     try {
-      const resultado = await this.indicadorPesoService.autorizarPortaSerial(configuracao);
-
-      /*
-       * Guardamos Vendor ID e Product ID
-       * quando o navegador disponibilizar.
-       *
-       * Isso ajudará na reconexão automática.
-       */
-      configuracao.comunicacao.usbVendorId = resultado.usbVendorId;
-
-      configuracao.comunicacao.usbProductId = resultado.usbProductId;
-
-      this.configuracaoSalva = configuracao;
-
-      this.persistirConfiguracao();
-
-      this.portaSerialAutorizada = true;
-
-      this.mostrarMensagem('Porta serial autorizada com sucesso.', 'sucesso');
+      await this.indicadorPesoService.conectarIndicador(configuracao, 'TESTE');
+    } catch (erro) {
+      console.error('Erro ao testar comunicação:', erro);
 
       this.mensagemTesteComunicacao =
-        'Porta autorizada. A conexão poderá ser realizada automaticamente.';
-    } catch (erro) {
-      if (erro instanceof DOMException && erro.name === 'NotFoundError') {
-        this.mensagemTesteComunicacao = 'A seleção da porta serial foi cancelada.';
-
-        return;
-      }
-
-      console.error('Erro ao autorizar porta serial:', erro);
-
-      this.mensagemTesteComunicacao = 'Não foi possível autorizar a porta serial.';
+        erro instanceof Error ? erro.message : 'Não foi possível iniciar o teste de comunicação.';
     }
   }
 
   // =========================================================
-  // Montagem da configuração atual
+  // Salvar configuração
   // =========================================================
 
-  private criarConfiguracaoAtual(
-    origem: 'configuracao' | 'teste',
-  ): IndicadorPesoConfiguracao | null {
-    if (!this.modeloIndicador) {
-      this.exibirErroValidacao('Selecione o modelo do indicador.', origem);
+  salvarConfiguracoes(): void {
+    this.limparMensagem();
 
-      return null;
+    /*
+     * Antes de salvar uma configuração Serial,
+     * garantimos novamente que os parâmetros
+     * utilizados sejam os definidos no modelo.
+     */
+    if (this.comunicacaoSerialSelecionada) {
+      this.aplicarConfiguracaoSerialPadraoModelo();
     }
 
+    const mensagemValidacao = this.validarConfiguracao();
+
+    if (mensagemValidacao) {
+      this.definirMensagemConfiguracao(mensagemValidacao, 'erro');
+
+      return;
+    }
+
+    const configuracao = this.criarConfiguracaoAtual();
+
+    try {
+      localStorage.setItem(this.storageKeyIndicador, JSON.stringify(configuracao));
+
+      this.definirMensagemConfiguracao('Configurações salvas com sucesso.', 'sucesso');
+    } catch (erro) {
+      console.error('Erro ao salvar configuração do indicador:', erro);
+
+      this.definirMensagemConfiguracao('Não foi possível salvar as configurações.', 'erro');
+    }
+  }
+
+  // =========================================================
+  // Criar configuração atual
+  // =========================================================
+
+  private criarConfiguracaoAtual(): IndicadorPesoConfiguracao {
+    // -------------------------------------------------------
+    // Serial
+    // -------------------------------------------------------
+
     if (this.comunicacaoSerialSelecionada) {
-      if (!this.portaSerial) {
-        this.exibirErroValidacao('Selecione a porta COM.', origem);
-
-        return null;
-      }
-
-      if (this.bitsDados !== 7 && this.bitsDados !== 8) {
-        this.exibirErroValidacao(
-          'Para comunicação pelo navegador, utilize 7 ou 8 bits de dados.',
-          origem,
-        );
-
-        return null;
-      }
-
-      if (this.controleFluxo === 'XON_XOFF') {
-        this.exibirErroValidacao(
-          'O controle de fluxo XON/XOFF não é suportado pela comunicação serial do navegador.',
-          origem,
-        );
-
-        return null;
-      }
-
-      /*
-       * Preservamos os identificadores USB
-       * obtidos anteriormente.
-       */
-      let usbVendorId: number | undefined;
-
-      let usbProductId: number | undefined;
-
-      if (this.configuracaoSalva?.comunicacao.tipo === 'SERIAL') {
-        usbVendorId = this.configuracaoSalva.comunicacao.usbVendorId;
-
-        usbProductId = this.configuracaoSalva.comunicacao.usbProductId;
-      }
-
       return {
         id: this.idIndicador,
 
@@ -525,33 +597,16 @@ export class Configuracoes implements OnInit, OnDestroy {
 
           controleFluxo: this.controleFluxo,
 
-          usbVendorId,
-          usbProductId,
+          usbVendorId: this.usbVendorId,
+
+          usbProductId: this.usbProductId,
         },
       };
     }
 
-    // =======================================================
+    // -------------------------------------------------------
     // TCP/IP
-    // =======================================================
-
-    if (!this.enderecoIp.trim()) {
-      this.exibirErroValidacao('Informe o endereço IP.', origem);
-
-      return null;
-    }
-
-    if (this.portaTcp === null || this.portaTcp < 1 || this.portaTcp > 65535) {
-      this.exibirErroValidacao('Informe uma porta TCP válida entre 1 e 65535.', origem);
-
-      return null;
-    }
-
-    if (this.timeoutTcp <= 0) {
-      this.exibirErroValidacao('O timeout deve ser maior que zero.', origem);
-
-      return null;
-    }
+    // -------------------------------------------------------
 
     return {
       id: this.idIndicador,
@@ -582,179 +637,202 @@ export class Configuracoes implements OnInit, OnDestroy {
   // Validação
   // =========================================================
 
-  private exibirErroValidacao(mensagem: string, origem: 'configuracao' | 'teste'): void {
-    if (origem === 'configuracao') {
-      this.mostrarMensagem(mensagem, 'erro');
-
-      return;
+  private validarConfiguracao(): string | null {
+    if (!this.modeloIndicador.trim()) {
+      return 'Selecione o modelo do indicador.';
     }
 
-    this.mensagemTesteComunicacao = mensagem;
+    const modelo = this.modeloIndicadorService.obterPorId(this.modeloIndicador);
+
+    if (!modelo) {
+      return 'O modelo selecionado não foi encontrado no cadastro.';
+    }
+
+    // -------------------------------------------------------
+    // Serial
+    // -------------------------------------------------------
+
+    if (this.comunicacaoSerialSelecionada) {
+      if (!modelo.suportaSerial) {
+        return 'O modelo selecionado não suporta comunicação Serial.';
+      }
+
+      if (!modelo.configuracaoSerialPadrao) {
+        return 'O modelo selecionado não possui parâmetros Serial configurados.';
+      }
+
+      if (!this.portaSerial) {
+        return 'Selecione a porta COM.';
+      }
+
+      return null;
+    }
+
+    // -------------------------------------------------------
+    // TCP/IP
+    // -------------------------------------------------------
+
+    if (!modelo.suportaTcpIp) {
+      return 'O modelo selecionado não suporta comunicação TCP/IP.';
+    }
+
+    if (!this.enderecoIp.trim()) {
+      return 'Informe o endereço IP do indicador.';
+    }
+
+    if (this.portaTcp === null || this.portaTcp < 1 || this.portaTcp > 65535) {
+      return 'Informe uma porta TCP válida entre 1 e 65535.';
+    }
+
+    if (!this.timeoutTcp || this.timeoutTcp <= 0) {
+      return 'Informe um timeout TCP válido.';
+    }
+
+    return null;
   }
 
   // =========================================================
-  // Persistência local
-  // =========================================================
-
-  private persistirConfiguracao(): void {
-    if (!this.configuracaoSalva) {
-      return;
-    }
-
-    localStorage.setItem(this.storageKey, JSON.stringify(this.configuracaoSalva));
-  }
-
-  // =========================================================
-  // Carregar configuração
+  // Carregar configuração salva
   // =========================================================
 
   private carregarConfiguracao(): void {
-    const configuracaoArmazenada = localStorage.getItem(this.storageKey);
+    const dados = localStorage.getItem(this.storageKeyIndicador);
 
-    if (!configuracaoArmazenada) {
+    if (!dados) {
       return;
     }
 
     try {
-      const dados = JSON.parse(configuracaoArmazenada) as
-        | IndicadorPesoConfiguracao
-        | ConfiguracaoIndicadorLegada;
+      const configuracao = JSON.parse(dados) as IndicadorPesoConfiguracao;
 
-      /*
-       * Novo formato
-       */
-      if ('comunicacao' in dados) {
-        this.aplicarConfiguracao(dados);
+      if (!configuracao || !configuracao.comunicacao) {
+        return;
+      }
+
+      this.modeloIndicador = configuracao.modelo ?? '';
+
+      // -----------------------------------------------------
+      // Serial
+      // -----------------------------------------------------
+
+      if (configuracao.comunicacao.tipo === 'SERIAL') {
+        const serial = configuracao.comunicacao;
+
+        this.tipoComunicacao = 'SERIAL';
+
+        this.portaSerial = serial.portaSerial ?? '';
+
+        this.velocidadeSerial = serial.velocidadeSerial ?? 4800;
+
+        this.bitsDados = serial.bitsDados ?? 7;
+
+        this.paridade = serial.paridade ?? 'EVEN';
+
+        this.bitsParada = serial.bitsParada ?? 2;
+
+        this.controleFluxo = serial.controleFluxo ?? 'NONE';
+
+        this.usbVendorId = serial.usbVendorId;
+
+        this.usbProductId = serial.usbProductId;
 
         return;
       }
 
-      /*
-       * Formato antigo.
-       *
-       * Convertemos automaticamente para
-       * a nova estrutura.
-       */
-      const configuracaoConvertida = this.converterConfiguracaoLegada(dados);
+      // -----------------------------------------------------
+      // TCP/IP
+      // -----------------------------------------------------
 
-      this.configuracaoSalva = configuracaoConvertida;
+      const tcp = configuracao.comunicacao;
 
-      this.aplicarConfiguracao(configuracaoConvertida);
+      this.tipoComunicacao = 'TCP_IP';
 
-      /*
-       * Depois da conversão, sobrescrevemos
-       * o localStorage já no novo formato.
-       */
-      this.persistirConfiguracao();
+      this.modoTcp = tcp.modoTcp ?? 'CLIENT';
+
+      this.enderecoIp = tcp.enderecoIp ?? '';
+
+      this.portaTcp = tcp.portaTcp ?? null;
+
+      this.timeoutTcp = tcp.timeoutTcp ?? 10;
+
+      this.reconexaoAutomatica = tcp.reconexaoAutomatica ?? true;
     } catch (erro) {
       console.error('Erro ao carregar configuração do indicador:', erro);
-
-      localStorage.removeItem(this.storageKey);
     }
   }
 
   // =========================================================
-  // Aplicar configuração na tela
+  // Compatibilidade com modelos antigos
   // =========================================================
 
-  private aplicarConfiguracao(configuracao: IndicadorPesoConfiguracao): void {
-    this.configuracaoSalva = configuracao;
-
-    this.modeloIndicador = configuracao.modelo ?? '';
-
-    if (configuracao.comunicacao.tipo === 'SERIAL') {
-      this.tipoComunicacao = 'SERIAL';
-
-      this.portaSerial = configuracao.comunicacao.portaSerial ?? '';
-
-      this.velocidadeSerial = configuracao.comunicacao.velocidadeSerial ?? 4800;
-
-      this.bitsDados = configuracao.comunicacao.bitsDados ?? 7;
-
-      this.paridade = configuracao.comunicacao.paridade ?? 'EVEN';
-
-      this.bitsParada = configuracao.comunicacao.bitsParada ?? 2;
-
-      this.controleFluxo = configuracao.comunicacao.controleFluxo ?? 'NONE';
-
+  private normalizarModeloIndicadorSalvo(): void {
+    if (!this.modeloIndicador) {
       return;
     }
 
-    // =======================================================
-    // TCP/IP
-    // =======================================================
+    const modelosLegados: Record<string, string> = {
+      ALFA_3101C: 'alfa-3101-c',
+    };
 
-    this.tipoComunicacao = 'TCP_IP';
+    const modeloConvertido = modelosLegados[this.modeloIndicador];
 
-    this.modoTcp = configuracao.comunicacao.modoTcp ?? 'CLIENT';
+    if (!modeloConvertido) {
+      return;
+    }
 
-    this.enderecoIp = configuracao.comunicacao.enderecoIp ?? '';
+    const existeNoCatalogo = this.modelosIndicadores.some(
+      (modelo) => modelo.id === modeloConvertido,
+    );
 
-    this.portaTcp = configuracao.comunicacao.portaTcp ?? null;
+    if (existeNoCatalogo) {
+      this.modeloIndicador = modeloConvertido;
 
-    this.timeoutTcp = configuracao.comunicacao.timeoutTcp ?? 5;
-
-    this.reconexaoAutomatica = configuracao.comunicacao.reconexaoAutomatica ?? true;
+      /*
+       * Como o modelo antigo foi convertido,
+       * carregamos também os parâmetros
+       * cadastrados no catálogo atual.
+       */
+      this.aplicarConfiguracaoSerialPadraoModelo();
+    }
   }
 
   // =========================================================
-  // Conversão da configuração antiga
+  // Proteção ao sair da página
   // =========================================================
 
-  private converterConfiguracaoLegada(
-    configuracao: ConfiguracaoIndicadorLegada,
-  ): IndicadorPesoConfiguracao {
-    if (configuracao.tipoComunicacao === 'TCP_IP') {
-      return {
-        id: this.idIndicador,
-
-        nome: this.nomeIndicador,
-
-        modelo: configuracao.modeloIndicador ?? '',
-
-        ativo: true,
-
-        comunicacao: {
-          tipo: 'TCP_IP',
-
-          modoTcp: configuracao.modoTcp ?? 'CLIENT',
-
-          enderecoIp: configuracao.enderecoIp ?? '',
-
-          portaTcp: configuracao.portaTcp ?? null,
-
-          timeoutTcp: configuracao.timeoutTcp ?? 5,
-
-          reconexaoAutomatica: configuracao.reconexaoAutomatica ?? true,
-        },
-      };
+  async podeSairDaPagina(): Promise<boolean> {
+    if (!this.indicadorPesoService.possuiTesteAtivo(this.idIndicador)) {
+      return true;
     }
 
-    return {
-      id: this.idIndicador,
+    const desejaSair = window.confirm(
+      'Existe um teste de comunicação ativo com o indicador.\n\n' +
+        'Ao sair da tela, o teste será desconectado.\n\n' +
+        'Deseja desconectar o teste e continuar?',
+    );
 
-      nome: this.nomeIndicador,
+    if (!desejaSair) {
+      return false;
+    }
 
-      modelo: configuracao.modeloIndicador ?? '',
+    await this.indicadorPesoService.desconectarTeste(this.idIndicador);
 
-      ativo: true,
+    return true;
+  }
 
-      comunicacao: {
-        tipo: 'SERIAL',
+  // =========================================================
+  // Proteção ao atualizar / fechar navegador
+  // =========================================================
 
-        portaSerial: configuracao.portaSerial ?? '',
+  @HostListener('window:beforeunload', ['$event'])
+  protegerAtualizacao(event: BeforeUnloadEvent): void {
+    if (!this.indicadorPesoService.possuiTesteAtivo(this.idIndicador)) {
+      return;
+    }
 
-        velocidadeSerial: configuracao.velocidadeSerial ?? 4800,
+    event.preventDefault();
 
-        bitsDados: configuracao.bitsDados ?? 7,
-
-        paridade: configuracao.paridade ?? 'EVEN',
-
-        bitsParada: configuracao.bitsParada ?? 2,
-
-        controleFluxo: configuracao.controleFluxo ?? 'NONE',
-      },
-    };
+    event.returnValue = '';
   }
 
   // =========================================================
@@ -767,7 +845,11 @@ export class Configuracoes implements OnInit, OnDestroy {
     this.tipoMensagemConfiguracao = '';
   }
 
-  private mostrarMensagem(mensagem: string, tipo: 'sucesso' | 'erro'): void {
+  private definirMensagemConfiguracao(
+    mensagem: string,
+
+    tipo: 'sucesso' | 'erro',
+  ): void {
     this.mensagemConfiguracao = mensagem;
 
     this.tipoMensagemConfiguracao = tipo;

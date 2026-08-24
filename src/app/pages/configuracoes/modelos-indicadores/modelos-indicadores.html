@@ -1,0 +1,775 @@
+<div class="models-page">
+
+  <!-- =====================================================
+       CABEÇALHO
+       ===================================================== -->
+
+  <div class="models-header">
+
+    <div class="models-header-text">
+
+      <h2>
+        {{ modoEdicao ? 'Configuração do Modelo' : 'Modelos de Indicadores' }}
+      </h2>
+
+      <p>
+        @if (modoEdicao) {
+          Informe as características técnicas do modelo de indicador.
+        } @else {
+          Cadastre os modelos de indicadores disponíveis para utilização nas balanças.
+        }
+      </p>
+
+    </div>
+
+
+    @if (!modoEdicao) {
+
+      <button
+        type="button"
+        class="new-model-button"
+        (click)="novoModelo()"
+      >
+        <span class="new-model-icon">+</span>
+
+        Novo modelo
+      </button>
+
+    }
+
+  </div>
+
+
+  <!-- =====================================================
+       MENSAGENS
+       ===================================================== -->
+
+  @if (mensagem) {
+
+    <div
+      class="model-message"
+      [class.success]="tipoMensagem === 'sucesso'"
+      [class.error]="tipoMensagem === 'erro'"
+    >
+      {{ mensagem }}
+    </div>
+
+  }
+
+
+  <!-- =====================================================
+       LISTA DOS MODELOS
+       ===================================================== -->
+
+  @if (!modoEdicao) {
+
+    <div class="models-list-card">
+
+      <div class="models-list-header">
+
+        <div>
+
+          <h3>Modelos cadastrados</h3>
+
+          <p>
+            {{ modelos.length }}
+
+            {{
+              modelos.length === 1
+                ? 'modelo cadastrado'
+                : 'modelos cadastrados'
+            }}
+          </p>
+
+        </div>
+
+      </div>
+
+
+      @if (modelos.length > 0) {
+
+        <div class="models-table-wrapper">
+
+          <table class="models-table">
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  Fabricante
+                </th>
+
+                <th>
+                  Modelo
+                </th>
+
+                <th>
+                  Comunicação
+                </th>
+
+                <th>
+                  Protocolo
+                </th>
+
+                <th>
+                  Status
+                </th>
+
+                <th class="actions-column">
+                  Ações
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              @for (modelo of modelos; track modelo.id) {
+
+                <tr>
+
+                  <!-- Fabricante -->
+                  <td>
+
+                    <strong class="manufacturer-name">
+                      {{ modelo.fabricante }}
+                    </strong>
+
+                  </td>
+
+
+                  <!-- Modelo -->
+                  <td>
+
+                    <div class="model-identification">
+
+                      <strong>
+                        {{ modelo.modelo }}
+                      </strong>
+
+                      @if (modelo.descricao) {
+
+                        <span>
+                          {{ modelo.descricao }}
+                        </span>
+
+                      }
+
+                    </div>
+
+                  </td>
+
+
+                  <!-- Comunicação -->
+                  <td>
+
+                    <div class="communication-badges">
+
+                      @if (modelo.suportaSerial) {
+
+                        <span class="communication-badge">
+                          Serial
+                        </span>
+
+                      }
+
+
+                      @if (modelo.suportaTcpIp) {
+
+                        <span class="communication-badge">
+                          TCP/IP
+                        </span>
+
+                      }
+
+                    </div>
+
+                  </td>
+
+
+                  <!-- Protocolo -->
+                  <td>
+
+                    <span class="protocol-name">
+                      {{ modelo.protocolo }}
+                    </span>
+
+                  </td>
+
+
+                  <!-- Status -->
+                  <td>
+
+                    <button
+                      type="button"
+                      class="status-button"
+                      [class.active]="modelo.ativo"
+                      [class.inactive]="!modelo.ativo"
+                      (click)="alterarStatus(modelo)"
+                    >
+
+                      <span class="status-dot"></span>
+
+                      {{
+                        modelo.ativo
+                          ? 'Ativo'
+                          : 'Inativo'
+                      }}
+
+                    </button>
+
+                  </td>
+
+
+                  <!-- Ações -->
+                  <td class="actions-column">
+
+                    <button
+                      type="button"
+                      class="edit-model-button"
+                      (click)="selecionarModelo(modelo)"
+                    >
+                      Editar
+                    </button>
+
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      } @else {
+
+        <!-- ===============================================
+             ESTADO VAZIO
+             =============================================== -->
+
+        <div class="empty-models">
+
+          <div class="empty-models-icon">
+            ⚖
+          </div>
+
+          <strong>
+            Nenhum modelo cadastrado
+          </strong>
+
+          <p>
+            Cadastre o primeiro modelo de indicador
+            para disponibilizá-lo na configuração das balanças.
+          </p>
+
+          <button
+            type="button"
+            class="empty-new-model-button"
+            (click)="novoModelo()"
+          >
+            + Novo modelo
+          </button>
+
+        </div>
+
+      }
+
+    </div>
+
+
+  <!-- =====================================================
+       FORMULÁRIO DO MODELO
+       ===================================================== -->
+
+  } @else if (modeloSelecionado) {
+
+    <div class="model-form">
+
+
+      <!-- =================================================
+           IDENTIFICAÇÃO
+           ================================================= -->
+
+      <section class="model-form-group">
+
+        <div class="model-form-group-title">
+
+          <h3>
+            Identificação
+          </h3>
+
+          <p>
+            Informe o fabricante e o modelo do equipamento.
+          </p>
+
+        </div>
+
+
+        <div class="model-form-grid">
+
+          <!-- Fabricante -->
+          <div class="model-form-field">
+
+            <label for="model-manufacturer">
+              Fabricante
+            </label>
+
+            <input
+              id="model-manufacturer"
+              type="text"
+              placeholder="Ex.: ALFA"
+              [(ngModel)]="modeloSelecionado.fabricante"
+            />
+
+          </div>
+
+
+          <!-- Modelo -->
+          <div class="model-form-field">
+
+            <label for="model-name">
+              Modelo
+            </label>
+
+            <input
+              id="model-name"
+              type="text"
+              placeholder="Ex.: 3101-C"
+              [(ngModel)]="modeloSelecionado.modelo"
+            />
+
+          </div>
+
+
+          <!-- Descrição -->
+          <div class="model-form-field model-form-field-full">
+
+            <label for="model-description">
+              Descrição
+            </label>
+
+            <input
+              id="model-description"
+              type="text"
+              placeholder="Ex.: Indicador de peso ALFA 3101-C"
+              [(ngModel)]="modeloSelecionado.descricao"
+            />
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           COMUNICAÇÃO SUPORTADA
+           ================================================= -->
+
+      <section class="model-form-group">
+
+        <div class="model-form-group-title">
+
+          <h3>
+            Comunicação suportada
+          </h3>
+
+          <p>
+            Selecione as formas de comunicação disponíveis neste modelo.
+          </p>
+
+        </div>
+
+
+        <div class="model-communication-options">
+
+          <!-- Serial -->
+          <label class="model-check-option">
+
+            <input
+              type="checkbox"
+              [(ngModel)]="modeloSelecionado.suportaSerial"
+              (change)="alterarSuporteSerial()"
+            />
+
+            <span class="model-check-content">
+
+              <strong>
+                Serial / RS-232
+              </strong>
+
+              <small>
+                Comunicação utilizando porta serial.
+              </small>
+
+            </span>
+
+          </label>
+
+
+          <!-- TCP/IP -->
+          <label class="model-check-option">
+
+            <input
+              type="checkbox"
+              [(ngModel)]="modeloSelecionado.suportaTcpIp"
+            />
+
+            <span class="model-check-content">
+
+              <strong>
+                TCP/IP
+              </strong>
+
+              <small>
+                Comunicação através da rede Ethernet.
+              </small>
+
+            </span>
+
+          </label>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           CONFIGURAÇÃO SERIAL PADRÃO
+           ================================================= -->
+
+      @if (modeloSelecionado.suportaSerial) {
+
+        @if (modeloSelecionado.configuracaoSerialPadrao; as serial) {
+
+          <section class="model-form-group">
+
+            <div class="model-form-group-title">
+
+              <h3>
+                Configuração Serial Padrão
+              </h3>
+
+              <p>
+                Estes parâmetros serão sugeridos automaticamente
+                ao configurar um indicador deste modelo.
+              </p>
+
+            </div>
+
+
+            <div class="model-form-grid serial-default-grid">
+
+              <!-- Velocidade -->
+              <div class="model-form-field">
+
+                <label for="model-baud-rate">
+                  Velocidade
+                </label>
+
+                <select
+                  id="model-baud-rate"
+                  [(ngModel)]="serial.velocidadeSerial"
+                >
+
+                  <option [ngValue]="300">
+                    300
+                  </option>
+
+                  <option [ngValue]="600">
+                    600
+                  </option>
+
+                  <option [ngValue]="1200">
+                    1200
+                  </option>
+
+                  <option [ngValue]="2400">
+                    2400
+                  </option>
+
+                  <option [ngValue]="4800">
+                    4800
+                  </option>
+
+                  <option [ngValue]="9600">
+                    9600
+                  </option>
+
+                  <option [ngValue]="19200">
+                    19200
+                  </option>
+
+                  <option [ngValue]="38400">
+                    38400
+                  </option>
+
+                  <option [ngValue]="57600">
+                    57600
+                  </option>
+
+                  <option [ngValue]="115200">
+                    115200
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <!-- Bits de dados -->
+              <div class="model-form-field">
+
+                <label for="model-data-bits">
+                  Bits de dados
+                </label>
+
+                <select
+                  id="model-data-bits"
+                  [(ngModel)]="serial.bitsDados"
+                >
+
+                  <option [ngValue]="5">
+                    5
+                  </option>
+
+                  <option [ngValue]="6">
+                    6
+                  </option>
+
+                  <option [ngValue]="7">
+                    7
+                  </option>
+
+                  <option [ngValue]="8">
+                    8
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <!-- Paridade -->
+              <div class="model-form-field">
+
+                <label for="model-parity">
+                  Paridade
+                </label>
+
+                <select
+                  id="model-parity"
+                  [(ngModel)]="serial.paridade"
+                >
+
+                  <option value="NONE">
+                    Nenhuma
+                  </option>
+
+                  <option value="EVEN">
+                    Par
+                  </option>
+
+                  <option value="ODD">
+                    Ímpar
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <!-- Bits de parada -->
+              <div class="model-form-field">
+
+                <label for="model-stop-bits">
+                  Bits de parada
+                </label>
+
+                <select
+                  id="model-stop-bits"
+                  [(ngModel)]="serial.bitsParada"
+                >
+
+                  <option [ngValue]="1">
+                    1
+                  </option>
+
+                  <option [ngValue]="2">
+                    2
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <!-- Controle de fluxo -->
+              <div class="model-form-field">
+
+                <label for="model-flow-control">
+                  Controle de fluxo
+                </label>
+
+                <select
+                  id="model-flow-control"
+                  [(ngModel)]="serial.controleFluxo"
+                >
+
+                  <option value="NONE">
+                    Nenhum
+                  </option>
+
+                  <option value="RTS_CTS">
+                    RTS/CTS
+                  </option>
+
+                  <option value="XON_XOFF">
+                    XON/XOFF
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+          </section>
+
+        }
+
+      }
+
+
+      <!-- =================================================
+           PROTOCOLO
+           ================================================= -->
+
+      <section class="model-form-group">
+
+        <div class="model-form-group-title">
+
+          <h3>
+            Protocolo de leitura
+          </h3>
+
+          <p>
+            Define como os dados enviados pelo indicador
+            serão interpretados pelo sistema.
+          </p>
+
+        </div>
+
+
+        <div class="model-form-grid">
+
+          <div class="model-form-field protocol-field">
+
+            <label for="model-protocol">
+              Protocolo
+            </label>
+
+            <select
+              id="model-protocol"
+              [(ngModel)]="modeloSelecionado.protocolo"
+            >
+
+              <option value="GENERICO">
+                Genérico
+              </option>
+
+              <option value="ALFA_PB_PL_T">
+                ALFA - PB / PL / T
+              </option>
+
+              <option value="TOLEDO">
+                Toledo
+              </option>
+
+            </select>
+
+
+            <small class="model-field-hint">
+              O protocolo determina qual interpretador será
+              utilizado para transformar o dado bruto em peso.
+            </small>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           STATUS
+           ================================================= -->
+
+      <section class="model-form-group">
+
+        <div class="model-form-group-title">
+
+          <h3>
+            Status
+          </h3>
+
+          <p>
+            Modelos inativos não serão disponibilizados
+            para novas configurações de indicadores.
+          </p>
+
+        </div>
+
+
+        <label class="model-active-option">
+
+          <input
+            type="checkbox"
+            [(ngModel)]="modeloSelecionado.ativo"
+          />
+
+          <span>
+            Modelo ativo
+          </span>
+
+        </label>
+
+      </section>
+
+
+      <!-- =================================================
+           AÇÕES
+           ================================================= -->
+
+      <div class="model-form-actions">
+
+        <button
+          type="button"
+          class="model-cancel-button"
+          (click)="cancelar()"
+        >
+          Cancelar
+        </button>
+
+
+        <button
+          type="button"
+          class="model-save-button"
+          (click)="salvar()"
+        >
+          Salvar modelo
+        </button>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

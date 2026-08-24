@@ -1,6 +1,9 @@
 <div class="settings-page">
   <section class="settings-card">
-    <!-- Cabeçalho -->
+    <!-- =====================================================
+         Cabeçalho
+         ===================================================== -->
+
     <div class="settings-header">
       <div class="settings-title">
         <div class="settings-title-icon">
@@ -15,370 +18,399 @@
       </div>
     </div>
 
-    <!-- Abas -->
+    <!-- =====================================================
+         Abas
+         ===================================================== -->
+
     <nav class="settings-tabs" aria-label="Categorias de configuração">
-      <button type="button" class="settings-tab active">Indicador de Peso</button>
+      <!-- Indicadores de Peso -->
+      <button
+        type="button"
+        class="settings-tab"
+        [class.active]="abaIndicadoresSelecionada"
+        (click)="selecionarAba('INDICADORES')"
+      >
+        Indicadores de Peso
+      </button>
+
+      <!-- Modelos de Indicadores -->
+      <button
+        type="button"
+        class="settings-tab"
+        [class.active]="abaModelosSelecionada"
+        (click)="selecionarAba('MODELOS')"
+      >
+        Modelos de Indicadores
+      </button>
     </nav>
 
-    <!-- Conteúdo -->
-    <section class="settings-content">
-      <div class="settings-section-header">
-        <div>
-          <h2>Indicador de Peso</h2>
+    <!-- =====================================================
+         ABA: INDICADORES DE PESO
+         ===================================================== -->
 
-          <p>
-            Configure o modelo do indicador e o tipo de comunicação utilizado para receber o peso.
-          </p>
-        </div>
-      </div>
+    @if (abaIndicadoresSelecionada) {
+      <section class="settings-content">
+        <!-- =================================================
+             Cabeçalho da seção
+             ================================================= -->
 
-      <!-- Tipo de comunicação -->
-      <section class="config-group">
-        <div class="config-group-title">
-          <h3>Tipo de comunicação</h3>
+        <div class="settings-section-header">
+          <div>
+            <h2>Indicadores de Peso</h2>
 
-          <p>Selecione como o computador receberá as informações do indicador.</p>
-        </div>
-
-        <div class="communication-options">
-          <!-- Serial -->
-          <button
-            type="button"
-            class="communication-option"
-            [class.active]="comunicacaoSerialSelecionada"
-            (click)="selecionarComunicacao('SERIAL')"
-          >
-            <div class="communication-option-marker">
-              <span></span>
-            </div>
-
-            <div class="communication-option-text">
-              <strong>Serial / RS-232</strong>
-
-              <span> Comunicação através de uma porta COM local. </span>
-            </div>
-          </button>
-
-          <!-- TCP/IP -->
-          <button
-            type="button"
-            class="communication-option"
-            [class.active]="comunicacaoTcpSelecionada"
-            (click)="selecionarComunicacao('TCP_IP')"
-          >
-            <div class="communication-option-marker">
-              <span></span>
-            </div>
-
-            <div class="communication-option-text">
-              <strong>TCP/IP</strong>
-
-              <span> Comunicação através da rede Ethernet. </span>
-            </div>
-          </button>
-        </div>
-      </section>
-
-      <!-- Modelo do indicador -->
-      <section class="config-group">
-        <div class="config-group-title">
-          <h3>Indicador</h3>
-
-          <p>Informe o modelo do indicador de peso conectado à balança.</p>
-        </div>
-
-        <div class="config-fields">
-          <div class="config-field indicator-model-field">
-            <label for="indicator-model"> Modelo do indicador </label>
-
-            <select id="indicator-model" [(ngModel)]="modeloIndicador">
-              <option value="">Selecione o modelo</option>
-
-              <option value="TOLEDO_9091R">TOLEDO 9091R</option>
-
-              <option value="TOLEDO_9091C">TOLEDO 9091C</option>
-
-              <option value="SATURNO_SBR140">SATURNO SBR-140</option>
-
-              <option value="EPM_2400_2500">EPM 2400/2500</option>
-
-              <option value="ALFA_3101C">ALFA 3101-C</option>
-
-              <option value="WEIGHTECH">WEIGHTECH</option>
-
-              <option value="MULLER">MULLER</option>
-
-              <option value="BI850">BI850</option>
-            </select>
+            <p>
+              Configure os indicadores e o tipo de comunicação utilizado para receber as informações
+              de peso.
+            </p>
           </div>
         </div>
-      </section>
 
-      <!-- SERIAL -->
-      @if (comunicacaoSerialSelecionada) {
+        <!-- =================================================
+             Tipo de comunicação
+             ================================================= -->
+
         <section class="config-group">
           <div class="config-group-title">
-            <h3>Configuração Serial</h3>
+            <h3>Tipo de comunicação</h3>
 
-            <p>Defina os parâmetros utilizados na comunicação com a porta COM.</p>
+            <p>Selecione como o computador receberá as informações do indicador.</p>
           </div>
 
-          <div class="serial-fields">
-            <div class="config-field">
-              <label for="serial-port"> Porta COM </label>
-
-              <div class="serial-port-row">
-                <select id="serial-port" [(ngModel)]="portaSerial">
-                  <option value="">Selecione a porta</option>
-
-                  @for (porta of portasSeriais; track porta) {
-                    <option [value]="porta">
-                      {{ porta }}
-                    </option>
-                  }
-                </select>
-
-                @if (portaSerialAutorizada) {
-                  <div class="port-linked-status">
-                    <span class="port-linked-icon">✓</span>
-
-                    <span> Dispositivo autorizado </span>
-                  </div>
-                } @else {
-                  <button
-                    type="button"
-                    class="link-port-button"
-                    [disabled]="!portaSerial || testandoComunicacao || comunicacaoConectada"
-                    (click)="autorizarPortaSerial()"
-                  >
-                    Vincular porta
-                  </button>
-                }
+          <div class="communication-options">
+            <!-- Serial -->
+            <button
+              type="button"
+              class="communication-option"
+              [class.active]="comunicacaoSerialSelecionada"
+              (click)="selecionarComunicacao('SERIAL')"
+            >
+              <div class="communication-option-marker">
+                <span></span>
               </div>
 
-              <small class="config-field-hint">
-                Selecione a porta configurada no Windows. A autorização do dispositivo é necessária
-                somente na configuração inicial da estação.
-              </small>
-            </div>
+              <div class="communication-option-text">
+                <strong>Serial / RS-232</strong>
 
-            <div class="config-field">
-              <label for="baud-rate"> Velocidade </label>
+                <span> Comunicação através de uma porta COM local. </span>
+              </div>
+            </button>
 
-              <select id="baud-rate" [(ngModel)]="velocidadeSerial">
-                <option [ngValue]="300">300</option>
-                <option [ngValue]="600">600</option>
-                <option [ngValue]="1200">1200</option>
-                <option [ngValue]="2400">2400</option>
-                <option [ngValue]="4800">4800</option>
-                <option [ngValue]="9600">9600</option>
-                <option [ngValue]="19200">19200</option>
-                <option [ngValue]="38400">38400</option>
-                <option [ngValue]="57600">57600</option>
-                <option [ngValue]="115200">115200</option>
-              </select>
-            </div>
+            <!-- TCP/IP -->
+            <button
+              type="button"
+              class="communication-option"
+              [class.active]="comunicacaoTcpSelecionada"
+              (click)="selecionarComunicacao('TCP_IP')"
+            >
+              <div class="communication-option-marker">
+                <span></span>
+              </div>
 
-            <div class="config-field">
-              <label for="data-bits"> Bits de dados </label>
+              <div class="communication-option-text">
+                <strong>TCP/IP</strong>
 
-              <select id="data-bits" [(ngModel)]="bitsDados">
-                <option [ngValue]="5">5</option>
-                <option [ngValue]="6">6</option>
-                <option [ngValue]="7">7</option>
-                <option [ngValue]="8">8</option>
-              </select>
-            </div>
-
-            <div class="config-field">
-              <label for="parity"> Paridade </label>
-
-              <select id="parity" [(ngModel)]="paridade">
-                <option value="NONE">Nenhuma</option>
-
-                <option value="EVEN">Par</option>
-
-                <option value="ODD">Ímpar</option>
-              </select>
-            </div>
-
-            <div class="config-field">
-              <label for="stop-bits"> Bits de parada </label>
-
-              <select id="stop-bits" [(ngModel)]="bitsParada">
-                <option [ngValue]="1">1</option>
-                <option [ngValue]="2">2</option>
-              </select>
-            </div>
-
-            <div class="config-field">
-              <label for="flow-control"> Controle de fluxo </label>
-
-              <select id="flow-control" [(ngModel)]="controleFluxo">
-                <option value="NONE">Nenhum</option>
-
-                <option value="RTS_CTS">RTS/CTS</option>
-
-                <option value="XON_XOFF">XON/XOFF</option>
-              </select>
-            </div>
+                <span> Comunicação através da rede Ethernet. </span>
+              </div>
+            </button>
           </div>
         </section>
-      }
 
-      <!-- TCP/IP -->
-      @if (comunicacaoTcpSelecionada) {
+        <!-- =================================================
+             Modelo do indicador
+             ================================================= -->
+
         <section class="config-group">
           <div class="config-group-title">
-            <h3>Configuração TCP/IP</h3>
+            <h3>Indicador</h3>
 
-            <p>Defina os parâmetros utilizados para comunicação pela rede.</p>
+            <p>Informe o modelo do indicador de peso conectado à balança.</p>
           </div>
 
-          <div class="serial-fields">
-            <div class="config-field">
-              <label for="tcp-mode"> Modo de conexão </label>
+          <div class="config-fields">
+            <div class="config-field indicator-model-field">
+              <label for="indicator-model"> Modelo do indicador </label>
 
-              <select id="tcp-mode" [(ngModel)]="modoTcp">
-                <option value="CLIENT">Cliente TCP</option>
+              <select
+                id="indicator-model"
+                [ngModel]="modeloIndicador"
+                (ngModelChange)="selecionarModeloIndicador($event)"
+              >
+                <option value="">Selecione o modelo</option>
 
-                <option value="SERVER">Servidor TCP</option>
-              </select>
-            </div>
-
-            <div class="config-field">
-              <label for="tcp-ip"> Endereço IP </label>
-
-              <input
-                id="tcp-ip"
-                type="text"
-                placeholder="Ex.: 172.16.243.100"
-                [(ngModel)]="enderecoIp"
-              />
-            </div>
-
-            <div class="config-field">
-              <label for="tcp-port"> Porta TCP </label>
-
-              <input
-                id="tcp-port"
-                type="number"
-                min="1"
-                max="65535"
-                placeholder="Ex.: 4001"
-                [(ngModel)]="portaTcp"
-              />
-            </div>
-
-            <div class="config-field">
-              <label for="tcp-timeout"> Timeout (segundos) </label>
-
-              <input id="tcp-timeout" type="number" min="1" [(ngModel)]="timeoutTcp" />
-            </div>
-
-            <div class="config-field">
-              <label for="tcp-reconnect"> Reconexão automática </label>
-
-              <select id="tcp-reconnect" [(ngModel)]="reconexaoAutomatica">
-                <option [ngValue]="true">Sim</option>
-
-                <option [ngValue]="false">Não</option>
+                @for (modelo of modelosIndicadores; track modelo.id) {
+                  <option [value]="modelo.id">{{ modelo.fabricante }} {{ modelo.modelo }}</option>
+                }
               </select>
             </div>
           </div>
         </section>
-      }
 
-      <!-- Teste -->
-      <!-- Teste da comunicação -->
-      <!-- Teste da comunicação -->
-      <section class="config-group communication-test">
-        <div class="config-group-title">
-          <h3>Teste da comunicação</h3>
+        <!-- =================================================
+     SERIAL
+     ================================================= -->
 
-          <p>Verifique se o sistema está recebendo dados do indicador.</p>
-        </div>
+        @if (comunicacaoSerialSelecionada) {
+          <section class="config-group">
+            <div class="config-group-title">
+              <h3>Configuração Serial</h3>
 
-        <div class="communication-status">
-          <!-- Status e ações -->
-          <div class="communication-status-header">
-            <div class="status-information">
-              <span class="connection-dot" [class.connected]="comunicacaoConectada"></span>
-
-              <strong>
-                {{ comunicacaoConectada ? 'Conectado' : 'Desconectado' }}
-              </strong>
+              <p>
+                Configure a porta utilizada nesta estação. Os parâmetros de comunicação são
+                definidos no cadastro do modelo do indicador.
+              </p>
             </div>
 
-            <div class="communication-actions">
-              <button
-                type="button"
-                class="test-connection-button"
-                [class.disconnect]="comunicacaoConectada"
-                [disabled]="testandoComunicacao"
-                (click)="testarComunicacao()"
-              >
-                @if (testandoComunicacao) {
-                  Conectando...
-                } @else if (comunicacaoConectada) {
-                  Desconectar
-                } @else {
-                  Testar comunicação
-                }
-              </button>
+            <div class="serial-compact-layout">
+              <!-- =================================================
+           Porta COM
+           ================================================= -->
+
+              <div class="config-field">
+                <label for="serial-port"> Porta COM </label>
+
+                <div class="serial-port-row">
+                  <select id="serial-port" [(ngModel)]="portaSerial">
+                    <option value="">Selecione a porta</option>
+
+                    @for (porta of portasSeriais; track porta) {
+                      <option [value]="porta">
+                        {{ porta }}
+                      </option>
+                    }
+                  </select>
+
+                  @if (portaSerialAutorizada) {
+                    <div class="port-linked-status">
+                      <span class="port-linked-icon"> ✓ </span>
+
+                      <span> Dispositivo autorizado </span>
+                    </div>
+                  } @else {
+                    <button
+                      type="button"
+                      class="link-port-button"
+                      [disabled]="!portaSerial || testandoComunicacao || comunicacaoConectada"
+                      (click)="autorizarPortaSerial()"
+                    >
+                      Vincular porta
+                    </button>
+                  }
+                </div>
+
+                <small class="config-field-hint">
+                  Selecione a porta configurada no Windows. A autorização do dispositivo é
+                  necessária somente na configuração inicial da estação.
+                </small>
+              </div>
+
+              <!-- =================================================
+           Parâmetros de comunicação
+           ================================================= -->
+
+              <div class="serial-parameters-card">
+                <div class="serial-parameters-header">
+                  <div>
+                    <span class="serial-parameters-label"> Parâmetros de comunicação </span>
+
+                    <strong class="serial-parameters-value">
+                      {{ resumoConfiguracaoSerial }}
+                    </strong>
+                  </div>
+
+                  <span class="serial-parameters-origin"> Padrão do modelo </span>
+                </div>
+
+                <div class="serial-parameters-hint">
+                  <span class="serial-parameters-hint-icon"> i </span>
+
+                  <span> Estes parâmetros são definidos no cadastro do modelo do indicador. </span>
+                </div>
+              </div>
             </div>
+          </section>
+        }
+
+        <!-- =================================================
+            TCP/IP
+        ================================================= -->
+
+        @if (comunicacaoTcpSelecionada) {
+          <section class="config-group">
+            <div class="config-group-title">
+              <h3>Configuração TCP/IP</h3>
+
+              <p>Defina os parâmetros utilizados para comunicação pela rede.</p>
+            </div>
+
+            <div class="serial-fields">
+              <!-- Modo -->
+              <div class="config-field">
+                <label for="tcp-mode"> Modo de conexão </label>
+
+                <select id="tcp-mode" [(ngModel)]="modoTcp">
+                  <option value="CLIENT">Cliente TCP</option>
+
+                  <option value="SERVER">Servidor TCP</option>
+                </select>
+              </div>
+
+              <!-- IP -->
+              <div class="config-field">
+                <label for="tcp-ip"> Endereço IP </label>
+
+                <input
+                  id="tcp-ip"
+                  type="text"
+                  placeholder="Ex.: 172.16.243.100"
+                  [(ngModel)]="enderecoIp"
+                />
+              </div>
+
+              <!-- Porta TCP -->
+              <div class="config-field">
+                <label for="tcp-port"> Porta TCP </label>
+
+                <input
+                  id="tcp-port"
+                  type="number"
+                  min="1"
+                  max="65535"
+                  placeholder="Ex.: 4001"
+                  [(ngModel)]="portaTcp"
+                />
+              </div>
+
+              <!-- Timeout -->
+              <div class="config-field">
+                <label for="tcp-timeout"> Timeout (segundos) </label>
+
+                <input id="tcp-timeout" type="number" min="1" [(ngModel)]="timeoutTcp" />
+              </div>
+
+              <!-- Reconexão -->
+              <div class="config-field">
+                <label for="tcp-reconnect"> Reconexão automática </label>
+
+                <select id="tcp-reconnect" [(ngModel)]="reconexaoAutomatica">
+                  <option [ngValue]="true">Sim</option>
+
+                  <option [ngValue]="false">Não</option>
+                </select>
+              </div>
+            </div>
+          </section>
+        }
+
+        <!-- =================================================
+             Teste da comunicação
+             ================================================= -->
+
+        <section class="config-group communication-test">
+          <div class="config-group-title">
+            <h3>Teste da comunicação</h3>
+
+            <p>Verifique se o sistema está recebendo dados do indicador.</p>
           </div>
 
-          <!-- Mensagem da comunicação -->
-          @if (mensagemTesteComunicacao) {
-            <div class="communication-test-message">
-              {{ mensagemTesteComunicacao }}
+          <div class="communication-status">
+            <!-- Status e ações -->
+            <div class="communication-status-header">
+              <div class="status-information">
+                <span class="connection-dot" [class.connected]="comunicacaoConectada"></span>
+
+                <strong>
+                  {{ comunicacaoConectada ? 'Conectado' : 'Desconectado' }}
+                </strong>
+              </div>
+
+              <div class="communication-actions">
+                <button
+                  type="button"
+                  class="test-connection-button"
+                  [class.disconnect]="comunicacaoConectada"
+                  [disabled]="testandoComunicacao"
+                  (click)="testarComunicacao()"
+                >
+                  @if (testandoComunicacao) {
+                    Conectando...
+                  } @else if (comunicacaoConectada) {
+                    Desconectar
+                  } @else {
+                    Testar comunicação
+                  }
+                </button>
+              </div>
             </div>
-          }
 
-          <!-- Dados recebidos -->
-          <div class="communication-result">
-            <div class="communication-result-item">
-              <span> Último dado recebido </span>
+            <!-- Mensagem da comunicação -->
+            @if (mensagemTesteComunicacao) {
+              <div class="communication-test-message">
+                {{ mensagemTesteComunicacao }}
+              </div>
+            }
 
-              <strong class="received-data">
-                {{ ultimoDadoRecebido ? ultimoDadoRecebido : 'Nenhum dado recebido' }}
-              </strong>
-            </div>
+            <!-- Dados recebidos -->
+            <div class="communication-result">
+              <div class="communication-result-item">
+                <span> Último dado recebido </span>
 
-            <div class="communication-result-item">
-              <span> Peso interpretado </span>
+                <strong class="received-data">
+                  {{ ultimoDadoRecebido ? ultimoDadoRecebido : 'Nenhum dado recebido' }}
+                </strong>
+              </div>
 
-              <strong>
-                @if (pesoInterpretado !== null) {
-                  {{ pesoInterpretado | number: '1.0-0' : 'pt-BR' }} Kg
-                } @else {
-                  -- Kg
-                }
-              </strong>
+              <div class="communication-result-item">
+                <span> Peso interpretado </span>
+
+                <strong>
+                  @if (pesoInterpretado !== null) {
+                    {{ pesoInterpretado | number: '1.0-0' : 'pt-BR' }}
+                    Kg
+                  } @else {
+                    -- Kg
+                  }
+                </strong>
+              </div>
             </div>
           </div>
+        </section>
+
+        <!-- =================================================
+             Mensagem da configuração
+             ================================================= -->
+
+        @if (mensagemConfiguracao) {
+          <div
+            class="settings-message"
+            [class.success]="tipoMensagemConfiguracao === 'sucesso'"
+            [class.error]="tipoMensagemConfiguracao === 'erro'"
+          >
+            {{ mensagemConfiguracao }}
+          </div>
+        }
+
+        <!-- =================================================
+             Ações
+             ================================================= -->
+
+        <div class="settings-actions">
+          <button type="button" class="secondary-button">Cancelar</button>
+
+          <button type="button" class="primary-button" (click)="salvarConfiguracoes()">
+            Salvar configurações
+          </button>
         </div>
       </section>
+    }
 
-      <!-- Ações -->
-      @if (mensagemConfiguracao) {
-        <div
-          class="settings-message"
-          [class.success]="tipoMensagemConfiguracao === 'sucesso'"
-          [class.error]="tipoMensagemConfiguracao === 'erro'"
-        >
-          {{ mensagemConfiguracao }}
-        </div>
-      }
+    <!-- =====================================================
+         ABA: MODELOS DE INDICADORES
+         ===================================================== -->
 
-      <div class="settings-actions">
-        <button type="button" class="secondary-button">Cancelar</button>
-
-        <button type="button" class="primary-button" (click)="salvarConfiguracoes()">
-          Salvar configurações
-        </button>
-      </div>
-    </section>
+    @if (abaModelosSelecionada) {
+      <section class="settings-content">
+        <app-modelos-indicadores />
+      </section>
+    }
   </section>
 </div>
