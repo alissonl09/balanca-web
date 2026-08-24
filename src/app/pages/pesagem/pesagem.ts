@@ -12,24 +12,34 @@ import { IndicadorPesoConfiguracao } from '../../models/indicador.model';
 
 import { PreTicketResponse } from '../../models/pre-ticket-response';
 
+import { ConfiguracaoGeralService } from '../../services/configuracao-geral.service';
+
 import { IndicadorPesoService } from '../../services/indicador-peso.service';
 
 import { PreTicketService } from '../../services/pre-ticket.service';
 
 @Component({
   selector: 'app-pesagem',
+
   standalone: true,
 
   imports: [CommonModule, FormsModule],
 
   templateUrl: './pesagem.html',
+
   styleUrl: './pesagem.css',
 })
 export class Pesagem implements OnInit, OnDestroy {
   // =========================================================
-  // Dados informados pelo operador
+  // Dados da estação / operador
   // =========================================================
 
+  /*
+   * A unidade não é mais informada pelo operador
+   * na tela de Pesagem.
+   *
+   * Ela vem das Configurações Gerais da estação.
+   */
   cdUnidadeBalanca: number | null = null;
 
   placa = '';
@@ -45,7 +55,7 @@ export class Pesagem implements OnInit, OnDestroy {
   // =========================================================
 
   /*
-   * pesoAtual agora começa zerado.
+   * pesoAtual começa zerado.
    *
    * O valor será fornecido pelo indicador
    * físico através do IndicadorPesoService.
@@ -78,31 +88,28 @@ export class Pesagem implements OnInit, OnDestroy {
   }
 
   get textoStatusIndicador(): string {
+    if (this.indicadorConectando) {
+      return 'Conectando indicador...';
+    }
 
-  if (this.indicadorConectando) {
-    return 'Conectando indicador...';
+    if (this.indicadorConectado) {
+      return 'Indicador conectado';
+    }
+
+    return 'Indicador desconectado';
   }
 
-  if (this.indicadorConectado) {
-    return 'Indicador conectado';
+  get classeStatusIndicador(): string {
+    if (this.indicadorConectando) {
+      return 'loading';
+    }
+
+    if (this.indicadorConectado) {
+      return 'success';
+    }
+
+    return 'error';
   }
-
-  return 'Indicador desconectado';
-}
-
-
-get classeStatusIndicador(): string {
-
-  if (this.indicadorConectando) {
-    return 'loading';
-  }
-
-  if (this.indicadorConectado) {
-    return 'success';
-  }
-
-  return 'error';
-}
 
   // =========================================================
   // Indicador de peso
@@ -142,6 +149,8 @@ get classeStatusIndicador(): string {
   // =========================================================
 
   constructor(
+    private readonly configuracaoGeralService: ConfiguracaoGeralService,
+
     private readonly preTicketService: PreTicketService,
 
     private readonly indicadorPesoService: IndicadorPesoService,
@@ -152,6 +161,16 @@ get classeStatusIndicador(): string {
   // =========================================================
 
   ngOnInit(): void {
+    // =======================================================
+    // Unidade da balança configurada para esta estação
+    // =======================================================
+
+    this.cdUnidadeBalanca = this.configuracaoGeralService.obterCodigoUnidadeBalanca();
+
+    // =======================================================
+    // Estado do indicador
+    // =======================================================
+
     /*
      * A tela observa continuamente o estado
      * do indicador principal.
@@ -320,13 +339,29 @@ get classeStatusIndicador(): string {
     this.limparMensagem();
 
     // =======================================================
+    // Atualizar unidade configurada
+    // =======================================================
+
+    /*
+     * Consultamos novamente o serviço antes de cada
+     * pré-ticket.
+     *
+     * Assim a tela sempre utiliza o valor atualmente
+     * salvo nas Configurações Gerais da estação.
+     */
+    this.cdUnidadeBalanca = this.configuracaoGeralService.obterCodigoUnidadeBalanca();
+
+    // =======================================================
     // Validação da unidade
     // =======================================================
 
     if (this.cdUnidadeBalanca === null || this.cdUnidadeBalanca <= 0) {
       this.limparPreTicket();
 
-      this.mostrarMensagem('Informe a unidade da balança.', 'aviso');
+      this.mostrarMensagem(
+        'Unidade da balança não configurada. Acesse Configurações > Configurações Gerais.',
+        'aviso',
+      );
 
       return;
     }
@@ -489,7 +524,11 @@ get classeStatusIndicador(): string {
     this.tipoMensagem = '';
   }
 
-  private mostrarMensagem(mensagem: string, tipo: 'sucesso' | 'erro' | 'aviso'): void {
+  private mostrarMensagem(
+    mensagem: string,
+
+    tipo: 'sucesso' | 'erro' | 'aviso',
+  ): void {
     this.mensagem = mensagem;
 
     this.tipoMensagem = tipo;

@@ -19,10 +19,20 @@
     </div>
 
     <!-- =====================================================
-         Abas
-         ===================================================== -->
+     Abas
+     ===================================================== -->
 
     <nav class="settings-tabs" aria-label="Categorias de configuração">
+      <!-- Configurações Gerais -->
+      <button
+        type="button"
+        class="settings-tab"
+        [class.active]="abaGeraisSelecionada"
+        (click)="selecionarAba('GERAIS')"
+      >
+        Configurações Gerais
+      </button>
+
       <!-- Indicadores de Peso -->
       <button
         type="button"
@@ -43,7 +53,78 @@
         Modelos de Indicadores
       </button>
     </nav>
+    <!-- =====================================================
+     ABA: CONFIGURAÇÕES GERAIS
+     ===================================================== -->
 
+    @if (abaGeraisSelecionada) {
+      <section class="settings-content">
+        <!-- Cabeçalho -->
+        <div class="settings-section-header">
+          <div>
+            <h2>Configurações Gerais</h2>
+
+            <p>Defina os parâmetros gerais utilizados por esta estação de pesagem.</p>
+          </div>
+        </div>
+
+        <!-- =================================================
+         Unidade da balança
+         ================================================= -->
+
+        <section class="config-group">
+          <div class="config-group-title">
+            <h3>Unidade da balança</h3>
+
+            <p>Informe a unidade à qual esta estação de pesagem pertence.</p>
+          </div>
+
+          <div class="config-fields">
+            
+            <div class="config-field general-unit-field">
+              <label for="balance-unit"> Unidade </label>
+
+              <input
+                id="balance-unit"
+                type="number"
+                min="1"
+                placeholder="Ex.: 4"
+                [(ngModel)]="codigoUnidadeBalanca"
+              />
+
+              <small class="config-field-hint">
+                Esta unidade será utilizada automaticamente nas operações realizadas pela tela de
+                Pesagem.
+              </small>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================
+         Mensagem
+         ================================================= -->
+
+        @if (mensagemConfiguracaoGeral) {
+          <div
+            class="settings-message"
+            [class.success]="tipoMensagemConfiguracaoGeral === 'sucesso'"
+            [class.error]="tipoMensagemConfiguracaoGeral === 'erro'"
+          >
+            {{ mensagemConfiguracaoGeral }}
+          </div>
+        }
+
+        <!-- =================================================
+         Ações
+         ================================================= -->
+
+        <div class="settings-actions">
+          <button type="button" class="primary-button" (click)="salvarConfiguracoesGerais()">
+            Salvar configurações
+          </button>
+        </div>
+      </section>
+    }
     <!-- =====================================================
          ABA: INDICADORES DE PESO
          ===================================================== -->

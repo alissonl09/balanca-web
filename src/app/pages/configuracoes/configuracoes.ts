@@ -6,6 +6,14 @@ import { FormsModule } from '@angular/forms';
 
 import { Subscription } from 'rxjs';
 
+import { ConfiguracaoGeralService } from '../../services/configuracao-geral.service';
+
+import { ModeloIndicadorService } from '../../services/modelo-indicador.service';
+
+import { IndicadorPesoService } from '../../services/indicador-peso.service';
+
+import { ModeloIndicador } from '../../models/modelo-indicador.model';
+
 import {
   ControleFluxoSerial,
   IndicadorPesoConfiguracao,
@@ -14,15 +22,9 @@ import {
   TipoComunicacaoIndicador,
 } from '../../models/indicador.model';
 
-import { ModeloIndicador } from '../../models/modelo-indicador.model';
-
-import { IndicadorPesoService } from '../../services/indicador-peso.service';
-
-import { ModeloIndicadorService } from '../../services/modelo-indicador.service';
-
 import { ModelosIndicadores } from './modelos-indicadores/modelos-indicadores';
 
-type AbaConfiguracoes = 'INDICADORES' | 'MODELOS';
+type AbaConfiguracoes = 'GERAIS' | 'INDICADORES' | 'MODELOS';
 
 @Component({
   selector: 'app-configuracoes',
@@ -54,7 +56,11 @@ export class Configuracoes implements OnInit, OnDestroy {
   // Navegação das configurações
   // =========================================================
 
-  abaSelecionada: AbaConfiguracoes = 'INDICADORES';
+  abaSelecionada: AbaConfiguracoes = 'GERAIS';
+
+  get abaGeraisSelecionada(): boolean {
+    return this.abaSelecionada === 'GERAIS';
+  }
 
   get abaIndicadoresSelecionada(): boolean {
     return this.abaSelecionada === 'INDICADORES';
@@ -63,6 +69,16 @@ export class Configuracoes implements OnInit, OnDestroy {
   get abaModelosSelecionada(): boolean {
     return this.abaSelecionada === 'MODELOS';
   }
+
+  // =========================================================
+  // Configurações Gerais
+  // =========================================================
+
+  codigoUnidadeBalanca: number | null = null;
+
+  mensagemConfiguracaoGeral = '';
+
+  tipoMensagemConfiguracaoGeral: 'sucesso' | 'erro' | '' = '';
 
   // =========================================================
   // Catálogo de modelos
@@ -202,6 +218,8 @@ export class Configuracoes implements OnInit, OnDestroy {
   // =========================================================
 
   constructor(
+    private readonly configuracaoGeralService: ConfiguracaoGeralService,
+
     private readonly indicadorPesoService: IndicadorPesoService,
 
     private readonly modeloIndicadorService: ModeloIndicadorService,
@@ -217,6 +235,14 @@ export class Configuracoes implements OnInit, OnDestroy {
     // -------------------------------------------------------
 
     this.carregarConfiguracao();
+
+    // -------------------------------------------------------
+    // Configurações Gerais
+    // -------------------------------------------------------
+
+    const configuracaoGeral = this.configuracaoGeralService.obterConfiguracaoAtual();
+
+    this.codigoUnidadeBalanca = configuracaoGeral.codigoUnidadeBalanca;
 
     // -------------------------------------------------------
     // Catálogo de modelos
@@ -523,6 +549,33 @@ export class Configuracoes implements OnInit, OnDestroy {
 
       this.mensagemTesteComunicacao =
         erro instanceof Error ? erro.message : 'Não foi possível iniciar o teste de comunicação.';
+    }
+  }
+
+  // =========================================================
+  // Salvar Configurações Gerais
+  // =========================================================
+
+  salvarConfiguracoesGerais(): void {
+    this.mensagemConfiguracaoGeral = '';
+
+    this.tipoMensagemConfiguracaoGeral = '';
+
+    try {
+      this.configuracaoGeralService.salvar({
+        codigoUnidadeBalanca: this.codigoUnidadeBalanca,
+      });
+
+      this.mensagemConfiguracaoGeral = 'Configurações gerais salvas com sucesso.';
+
+      this.tipoMensagemConfiguracaoGeral = 'sucesso';
+    } catch (erro) {
+      const mensagem =
+        erro instanceof Error ? erro.message : 'Não foi possível salvar as configurações gerais.';
+
+      this.mensagemConfiguracaoGeral = mensagem;
+
+      this.tipoMensagemConfiguracaoGeral = 'erro';
     }
   }
 
