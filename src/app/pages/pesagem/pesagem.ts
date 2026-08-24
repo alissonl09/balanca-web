@@ -50,6 +50,7 @@ export class Pesagem implements OnInit, OnDestroy {
 
   preTicket: PreTicketResponse | null = null;
 
+  
   // =========================================================
   // Pesagem
   // =========================================================
@@ -306,17 +307,31 @@ export class Pesagem implements OnInit, OnDestroy {
   }
 
   // =========================================================
+  // Limpar consulta da Pré-ticket
+  // =========================================================
+
+limparConsulta(): void {
+  this.placa = '';
+
+  this.preTicket = null;
+
+  this.mensagem = '';
+
+  this.tipoMensagem = '';
+
+  this.carregando = false;
+}
+
+  // =========================================================
   // Nova pesagem
   // =========================================================
 
   novaPesagem(): void {
-    this.placa = '';
-
-    this.preTicket = null;
-
-    this.mensagem = '';
-
-    this.tipoMensagem = '';
+    /*
+     * Limpa todos os dados relacionados
+     * à consulta da placa atual.
+     */
+    this.limparConsulta();
 
     /*
      * Não zeramos pesoAtual aqui.
@@ -505,7 +520,13 @@ export class Pesagem implements OnInit, OnDestroy {
 
     return erro.error?.descricaoRetorno ?? 'Verifique os parâmetros informados.';
   }
+  // =========================================================
+  // Estado da consulta da Pré-ticket
+  // =========================================================
 
+  get preTicketCarregado(): boolean {
+    return this.preTicket !== null;
+  }
   // =========================================================
   // Limpeza da Pré-ticket
   // =========================================================

@@ -40,21 +40,32 @@
             maxlength="8"
             placeholder="Ex.: ABC1D23"
             [(ngModel)]="placa"
+            [readonly]="preTicket !== null"
             [disabled]="carregando"
-            (keyup.enter)="consultarPreTicket()"
+            (keyup.enter)="!preTicket && consultarPreTicket()"
           />
         </div>
 
-        <!-- Consultar -->
+        <!-- Ação -->
         <div class="search-button-container">
-          <button
-            type="button"
-            class="search-button"
-            [disabled]="carregando"
-            (click)="consultarPreTicket()"
-          >
-            {{ carregando ? 'Consultando...' : 'Consultar' }}
-          </button>
+          @if (preTicket) {
+            <button
+              type="button"
+              class="search-button clear-search-button"
+              (click)="limparConsulta()"
+            >
+              Limpar
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="search-button"
+              [disabled]="carregando"
+              (click)="consultarPreTicket()"
+            >
+              {{ carregando ? 'Consultando...' : 'Consultar' }}
+            </button>
+          }
         </div>
       </div>
 
@@ -83,13 +94,6 @@
       </div>
 
       <div class="operation-grid">
-        <!-- Placa -->
-        <div class="form-field">
-          <label> Placa </label>
-
-          <input type="text" readonly [value]="placa" />
-        </div>
-
         <!-- Veículo -->
         <div class="form-field future-field">
           <label> Veículo </label>

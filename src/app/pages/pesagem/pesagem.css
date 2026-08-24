@@ -1558,3 +1558,36 @@
     margin-top: 4px;
   }
 }
+
+/* =========================================================
+   Consulta da placa - estado carregado
+   ========================================================= */
+
+.search-section .form-field input[readonly] {
+  background: #f3f5f4;
+
+  border-color: #d5dad8;
+
+  color: #495057;
+
+  cursor: default;
+}
+
+
+/* =========================================================
+   Botão Limpar
+   ========================================================= */
+
+.clear-search-button {
+  border-color: #adb5bd !important;
+
+  background: #6c757d !important;
+
+  color: #ffffff !important;
+}
+
+.clear-search-button:hover {
+  border-color: #5f666d !important;
+
+  background: #5f666d !important;
+}
