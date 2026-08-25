@@ -50,7 +50,42 @@ export class Pesagem implements OnInit, OnDestroy {
 
   preTicket: PreTicketResponse | null = null;
 
-  
+  // =========================================================
+  // Composição do veículo
+  // =========================================================
+
+  /*
+   * Carreta escolhida ou informada manualmente
+   * para a pesagem atual.
+   */
+  placaCarreta = '';
+
+  /*
+   * Possíveis carretas retornadas pela pré-ticket.
+   */
+  placasCarretas: string[] = [];
+
+  /*
+   * Mensagem específica de validação da carreta.
+   */
+  mensagemCarreta = '';
+
+  get placaCavalo(): string {
+    /*
+     * O Cavalo somente é considerado identificado
+     * depois que uma pré-ticket for encontrada.
+     */
+    return this.preTicket ? this.placa : '';
+  }
+
+  get possuiMultiplasCarretas(): boolean {
+    return this.placasCarretas.length >= 2;
+  }
+
+  get placeholderCarreta(): string {
+    return this.possuiMultiplasCarretas ? 'Selecione uma carreta' : 'Informe a placa da carreta';
+  }
+
   // =========================================================
   // Pesagem
   // =========================================================
@@ -310,17 +345,19 @@ export class Pesagem implements OnInit, OnDestroy {
   // Limpar consulta da Pré-ticket
   // =========================================================
 
-limparConsulta(): void {
-  this.placa = '';
+  limparConsulta(): void {
+    this.placa = '';
 
-  this.preTicket = null;
+    this.limparPreTicket();
 
-  this.mensagem = '';
+    this.limparComposicaoVeiculo();
 
-  this.tipoMensagem = '';
+    this.mensagem = '';
 
-  this.carregando = false;
-}
+    this.tipoMensagem = '';
+
+    this.carregando = false;
+  }
 
   // =========================================================
   // Nova pesagem
@@ -352,6 +389,14 @@ limparConsulta(): void {
 
   consultarPreTicket(): void {
     this.limparMensagem();
+
+    /*
+     * Uma nova consulta nunca deve reaproveitar
+     * dados da composição anterior.
+     */
+    this.limparPreTicket();
+
+    this.limparComposicaoVeiculo();
 
     // =======================================================
     // Atualizar unidade configurada
@@ -405,6 +450,12 @@ limparConsulta(): void {
       next: (resposta: PreTicketResponse) => {
         this.preTicket = resposta;
 
+        /*
+         * Prepara as possíveis carretas retornadas
+         * pela Libra-API.
+         */
+        this.prepararCarretas(resposta.placasCarretas);
+
         this.carregando = false;
 
         this.mostrarMensagem(resposta.descricaoRetorno, 'sucesso');
@@ -414,6 +465,8 @@ limparConsulta(): void {
         this.carregando = false;
 
         this.limparPreTicket();
+
+        this.limparComposicaoVeiculo();
 
         this.tratarErro(erro);
       },
@@ -533,6 +586,61 @@ limparConsulta(): void {
 
   private limparPreTicket(): void {
     this.preTicket = null;
+  }
+
+  // =========================================================
+  // Composição do veículo
+  // =========================================================
+
+  private prepararCarretas(placas: string[] | null | undefined): void {
+    const placasNormalizadas = (placas ?? [])
+      /*
+       * Proteção também para eventual valor inválido
+       * recebido em tempo de execução.
+       */
+      .filter((placa): placa is string => typeof placa === 'string')
+      /*
+       * Remove espaços e padroniza em maiúsculas.
+       */
+      .map((placa) => placa.trim().toUpperCase())
+      /*
+       * Remove valores vazios.
+       */
+      .filter((placa) => placa.length > 0);
+
+    /*
+     * Remove placas duplicadas.
+     */
+    this.placasCarretas = [...new Set(placasNormalizadas)];
+
+    /*
+     * Uma única carreta:
+     * selecionamos automaticamente.
+     *
+     * Nenhuma ou várias:
+     * campo começa vazio.
+     */
+    this.placaCarreta = this.placasCarretas.length === 1 ? this.placasCarretas[0] : '';
+
+    this.mensagemCarreta = '';
+  }
+
+  private limparComposicaoVeiculo(): void {
+    this.placaCarreta = '';
+
+    this.placasCarretas = [];
+
+    this.mensagemCarreta = '';
+  }
+
+  /*
+   * Utilizado quando o balanceiro informar
+   * uma carreta manualmente.
+   */
+  normalizarPlacaCarreta(): void {
+    this.placaCarreta = this.placaCarreta.trim().toUpperCase();
+
+    this.mensagemCarreta = '';
   }
 
   // =========================================================

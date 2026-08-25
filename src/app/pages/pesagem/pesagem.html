@@ -24,50 +24,113 @@
          Área de consulta
          ===================================================== -->
 
+    <!-- =====================================================
+     Consulta e composição do veículo
+     ===================================================== -->
+
     <section class="search-section">
-      <div class="section-title">
-        <h2>Consultar pré-ticket</h2>
-      </div>
+      <div class="vehicle-top-layout">
+        <!-- ===================================================
+         Consulta da pré-ticket
+         =================================================== -->
 
-      <div class="search-grid">
-        <!-- Placa -->
-        <div class="form-field">
-          <label for="placa"> Placa </label>
+        <div class="pre-ticket-area">
+          <div class="section-title">
+            <h2>Consultar pré-ticket</h2>
+          </div>
 
-          <input
-            id="placa"
-            type="text"
-            maxlength="8"
-            placeholder="Ex.: ABC1D23"
-            [(ngModel)]="placa"
-            [readonly]="preTicket !== null"
-            [disabled]="carregando"
-            (keyup.enter)="!preTicket && consultarPreTicket()"
-          />
+          <div class="search-grid">
+            <!-- Placa -->
+            <div class="form-field">
+              <label for="placa"> Placa </label>
+
+              <input
+                id="placa"
+                type="text"
+                maxlength="8"
+                placeholder="Ex.: ABC1D23"
+                [(ngModel)]="placa"
+                [readonly]="preTicket !== null"
+                [disabled]="carregando"
+                (keyup.enter)="!preTicket && consultarPreTicket()"
+              />
+            </div>
+
+            <!-- Ação -->
+            <div class="search-button-container">
+              @if (preTicket) {
+                <button
+                  type="button"
+                  class="search-button clear-search-button"
+                  (click)="limparConsulta()"
+                >
+                  Limpar
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="search-button"
+                  [disabled]="carregando"
+                  (click)="consultarPreTicket()"
+                >
+                  {{ carregando ? 'Consultando...' : 'Consultar' }}
+                </button>
+              }
+            </div>
+          </div>
         </div>
 
-        <!-- Ação -->
-        <div class="search-button-container">
-          @if (preTicket) {
-            <button
-              type="button"
-              class="search-button clear-search-button"
-              (click)="limparConsulta()"
-            >
-              Limpar
-            </button>
-          } @else {
-            <button
-              type="button"
-              class="search-button"
-              [disabled]="carregando"
-              (click)="consultarPreTicket()"
-            >
-              {{ carregando ? 'Consultando...' : 'Consultar' }}
-            </button>
-          }
+        <!-- ===================================================
+         Composição do veículo
+         =================================================== -->
+
+        <div class="vehicle-composition-area">
+          <div class="section-title composition-title">
+            <h2>Composição do veículo</h2>
+          </div>
+
+          <div class="composition-grid">
+            <!-- Cavalo -->
+            <div class="form-field">
+              <label for="placa-cavalo"> Cavalo </label>
+
+              <input id="placa-cavalo" type="text" readonly [value]="placaCavalo" />
+            </div>
+
+            <!-- Carreta -->
+            <div class="form-field">
+              <label for="placa-carreta"> Carreta </label>
+
+              <input
+                id="placa-carreta"
+                type="text"
+                maxlength="8"
+                list="lista-carretas"
+                [placeholder]="placeholderCarreta"
+                [(ngModel)]="placaCarreta"
+                [disabled]="carregando || !preTicket"
+                (blur)="normalizarPlacaCarreta()"
+              />
+
+              <datalist id="lista-carretas">
+                @for (placaCarretaOpcao of placasCarretas; track placaCarretaOpcao) {
+                  <option [value]="placaCarretaOpcao"></option>
+                }
+              </datalist>
+
+              @if (mensagemCarreta) {
+                <small class="carreta-validation-message">
+                  {{ mensagemCarreta }}
+                </small>
+              }
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- ===================================================
+       Mensagem da consulta
+       =================================================== -->
 
       @if (mensagem) {
         <div class="message" [ngClass]="tipoMensagem">
@@ -97,13 +160,6 @@
         <!-- Veículo -->
         <div class="form-field future-field">
           <label> Veículo </label>
-
-          <input type="text" disabled placeholder="Integração futura" />
-        </div>
-
-        <!-- Carreta 2 -->
-        <div class="form-field future-field">
-          <label> Carreta 2 </label>
 
           <input type="text" disabled placeholder="Integração futura" />
         </div>

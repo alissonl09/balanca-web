@@ -1573,7 +1573,6 @@
   cursor: default;
 }
 
-
 /* =========================================================
    Botão Limpar
    ========================================================= */
@@ -1590,4 +1589,171 @@
   border-color: #5f666d !important;
 
   background: #5f666d !important;
+}
+
+/* =========================================================
+   Consulta + composição do veículo
+   ========================================================= */
+
+.vehicle-top-layout {
+  display: grid;
+  grid-template-columns:
+    minmax(300px, 0.9fr)
+    minmax(560px, 2.1fr);
+
+  width: 100%;
+  min-width: 0;
+}
+
+/* =========================================================
+   Consulta da pré-ticket
+   ========================================================= */
+
+.pre-ticket-area {
+  min-width: 0;
+
+  padding-right: 28px;
+}
+
+.vehicle-top-layout .pre-ticket-area .search-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 1fr)
+    112px;
+
+  gap: 14px;
+
+  align-items: end;
+}
+
+.vehicle-top-layout .pre-ticket-area .search-button-container {
+  width: 100%;
+}
+
+.vehicle-top-layout .pre-ticket-area .search-button {
+  width: 100%;
+  min-width: 0;
+}
+
+/* =========================================================
+   Composição do veículo
+   ========================================================= */
+
+.vehicle-composition-area {
+  min-width: 0;
+
+  padding-left: 32px;
+
+  border-left: 1px solid #d7dfdc;
+}
+
+.composition-title {
+  display: flex;
+  align-items: center;
+}
+
+.composition-grid {
+  display: grid;
+
+  /*
+   * Os campos ficam compactos como no layout
+   * de referência, sem ocupar toda a área disponível.
+   */
+  grid-template-columns:
+    minmax(180px, 230px)
+    minmax(200px, 240px);
+
+  gap: 30px;
+
+  align-items: start;
+}
+
+/* =========================================================
+   Campo Cavalo
+   ========================================================= */
+
+#placa-cavalo {
+  background: #f3f5f4;
+
+  border-color: #d5dad8;
+
+  color: #495057;
+
+  cursor: default;
+}
+
+/* =========================================================
+   Campo Carreta
+   ========================================================= */
+
+#placa-carreta {
+  text-transform: uppercase;
+}
+
+#placa-carreta:disabled {
+  background: #f3f5f4;
+
+  color: #8b9390;
+
+  cursor: not-allowed;
+}
+
+.carreta-validation-message {
+  display: block;
+
+  margin-top: 6px;
+
+  color: #b42318;
+
+  font-size: 12px;
+
+  line-height: 1.25;
+}
+
+/* =========================================================
+   Responsividade
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .vehicle-top-layout {
+    grid-template-columns:
+      minmax(280px, 1fr)
+      minmax(460px, 1.6fr);
+  }
+
+  .vehicle-composition-area {
+    padding-left: 22px;
+  }
+
+  .pre-ticket-area {
+    padding-right: 22px;
+  }
+
+  .composition-grid {
+    grid-template-columns:
+      minmax(160px, 1fr)
+      minmax(180px, 1fr);
+
+    gap: 18px;
+  }
+}
+
+@media (max-width: 820px) {
+  .vehicle-top-layout {
+    grid-template-columns: 1fr;
+
+    gap: 22px;
+  }
+
+  .pre-ticket-area {
+    padding-right: 0;
+  }
+
+  .vehicle-composition-area {
+    padding-top: 20px;
+    padding-left: 0;
+
+    border-top: 1px solid #d7dfdc;
+    border-left: 0;
+  }
 }
