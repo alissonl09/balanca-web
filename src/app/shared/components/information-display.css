@@ -1,0 +1,6 @@
+:host{display:block;min-width:0}
+.access-display{container-type:inline-size;margin-top:5px;padding:6px;background:#15191c;border-radius:5px;overflow:hidden;color:#ff3026;font:700 30px/34px DS-Digital,monospace;letter-spacing:3px;text-shadow:-.75px 0 #ff3026,.75px 0 #ff3026;height:46px}
+.access-display span{display:block;white-space:nowrap;width:max-content;min-width:100%;animation:marquee 12s linear infinite}
+/* Distância inicial = viewport; distância final = texto completo, inclusive mensagens longas. */
+@keyframes marquee{from{transform:translateX(100cqw)}to{transform:translateX(-100%)}}
+@media(prefers-reduced-motion:reduce){.access-display span{animation:none;min-width:0}}

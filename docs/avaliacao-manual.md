@@ -1,0 +1,16 @@
+﻿# Avaliação manual — Balança Web
+
+Na pasta balanca-web, execute `npm start -- --host 127.0.0.1 --port 4300` e abra http://127.0.0.1:4300. Não é necessário backend para o modo Mock local. `npm run build` gera o build de produção. O estado mock é volátil e reiniciar/recarregar o navegador restaura fixtures.
+
+1. Configurações → Gerais: selecione unidade e estação mock (JAPY tem duas estações), aplique contexto e salve SGV ativo/manual habilitada. Gestão de Veículos: habilite equipamentos, escolha duas cancelas diferentes, configure mensagem COOXUPÉ BALANÇA e salve. Pesagem deve atualizar equipamentos, abas e display COOXUPE BALANCA. Inverta as associações e verifique posições Entrada/Saída fixas.
+2. Pesagem: ABC1D23 tem LOV de carretas; GHI3F45 tem uma carreta readonly; DEF2E34 demonstra pesagem aberta; ZZZ9Z99 permite dados manuais. Carreta é opcional.
+3. F11: usuário demo / senha demo (exclusivamente mock), justificativa, peso positivo e confirmar. A primeira captura abre, F10 salva metadados sem capturar, segunda captura fecha e desabilita F10. F6 reinicia sem apagar configurações. F12 desconectado só confirma preview sem capturar. Controles de simulação permitem testar indicador conectado/estável e peso zero. F5 abre preview; não imprime fisicamente.
+4. Cadastros: testar incluir/editar/visualizar/pesquisar/inativar nos quatro cadastros principais. Transportadora é selecionada por código para motorista vinculado e placas. Operações/Itens/Unidades têm estrutura mínima com aviso provisório. Incluir inativos permite conferir preservação do registro.
+5. Relatórios: gerar Pesagens, filtrar período/placa/manual; gerar Tickets separadamente. MOCK-T1 e MOCK-T2 pertencem à mesma MOCK-P1. Testar preview e exportação CSV. Os demais relatórios usam cadastros locais ou fixture de depósito; tabela vazia é esperada se nenhum cadastro tiver sido incluído.
+6. Tickets: visualizar Ticket/A4, reimprimir, cancelar com justificativa e conferir usuário/data/histórico/marca CANCELADO. Para emitir outro ticket local, confirme uma captura na Pesagem e clique Emitir ticket mock da pesagem atual. Emitir duas vezes cria dois tickets distintos vinculados à mesma pesagem, sem duplicar a captura.
+7. Permissões: Alisson é administrador mock; Carlos é operador; demo é autorizador/supervisor. Use menu do usuário para trocar. Master restaura acesso à matriz caso se retire uma permissão do administrador. Operador não pode administrar cadastros/configurações nem autorizar manual por padrão. Cancelar ticket não exclui dados.
+8. Alternar estações deve isolar configurações/tickets/resultados e limpar a operação atual para não misturar capturas. Visitar outras telas sem trocar estação preserva a pesagem aberta.
+
+O modo Libra-API real usa somente o contrato já existente GET /api/v1/pre-tickets e exige ambiente do piloto. Erros reais nunca aplicam fixtures silenciosamente. OCR/voz, impressora, indicador físico, cancelas e sincronização real continuam dependentes dos serviços apropriados.
+
+Evidências automáticas: qa-final/runtime.json e PNGs. Para repetir a revisão, primeiro `npm run build`, depois `node scripts/manual-review.mjs` (Chrome instalado no caminho usado pelo script). O script não cria API: serve somente os arquivos estáticos e encerra o Chrome headless ao terminar.

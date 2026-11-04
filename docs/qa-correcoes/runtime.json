@@ -1,0 +1,213 @@
+{
+  "results": [
+    {
+      "path": "/pesagem",
+      "width": 1920,
+      "height": 1080,
+      "scrollWidth": 1920,
+      "bodyWidth": 1920,
+      "title": "Pesagem",
+      "actionsBottom": 979.109375,
+      "buttons": [
+        "Salvar PesagemF10"
+      ]
+    },
+    {
+      "path": "/cadastros",
+      "width": 1920,
+      "height": 1080,
+      "scrollWidth": 1920,
+      "bodyWidth": 1920,
+      "title": "Cadastros",
+      "actionsBottom": null,
+      "buttons": []
+    },
+    {
+      "path": "/relatorios",
+      "width": 1920,
+      "height": 1080,
+      "scrollWidth": 1905,
+      "bodyWidth": 1905,
+      "title": "Relatórios",
+      "actionsBottom": null,
+      "buttons": []
+    },
+    {
+      "path": "/tickets",
+      "width": 1920,
+      "height": 1080,
+      "scrollWidth": 1920,
+      "bodyWidth": 1920,
+      "title": "Tickets",
+      "actionsBottom": null,
+      "buttons": []
+    },
+    {
+      "path": "/configuracoes",
+      "width": 1920,
+      "height": 1080,
+      "scrollWidth": 1920,
+      "bodyWidth": 1920,
+      "title": "Configurações",
+      "actionsBottom": null,
+      "buttons": []
+    },
+    {
+      "path": "/pesagem",
+      "width": 1600,
+      "height": 900,
+      "scrollWidth": 1585,
+      "bodyWidth": 1585,
+      "title": "Pesagem",
+      "actionsBottom": 879.109375,
+      "buttons": [
+        "Salvar PesagemF10"
+      ]
+    },
+    {
+      "path": "/cadastros",
+      "width": 1600,
+      "height": 900,
+      "scrollWidth": 1600,
+      "bodyWidth": 1600,
+      "title": "Cadastros",
+      "actionsBottom": null,
+      "buttons": []
+    },
+    {
+      "path": "/relatorios",
+      "width": 1600,
+      "height": 900,
+      "scrollWidth": 1585,
+      "bodyWidth": 1585,
+      "title": "Relatórios",
+      "actionsBottom": null,
+      "buttons": []
+    },
+    {
+      "path": "/tickets",
+      "width": 1600,
+      "height": 900,
+      "scrollWidth": 1600,
+      "bodyWidth": 1600,
+      "title": "Tickets",
+      "actionsBottom": null,
+      "buttons": []
+    },
+    {
+      "path": "/configuracoes",
+      "width": 1600,
+      "height": 900,
+      "scrollWidth": 1585,
+      "bodyWidth": 1585,
+      "title": "Configurações",
+      "actionsBottom": null,
+      "buttons": []
+    },
+    {
+      "path": "/pesagem",
+      "width": 1366,
+      "height": 768,
+      "scrollWidth": 1351,
+      "bodyWidth": 1351,
+      "title": "Pesagem",
+      "actionsBottom": 766.90625,
+      "buttons": [
+        "Salvar PesagemF10"
+      ]
+    },
+    {
+      "path": "/cadastros",
+      "width": 1366,
+      "height": 768,
+      "scrollWidth": 1366,
+      "bodyWidth": 1366,
+      "title": "Cadastros",
+      "actionsBottom": null,
+      "buttons": []
+    },
+    {
+      "path": "/relatorios",
+      "width": 1366,
+      "height": 768,
+      "scrollWidth": 1351,
+      "bodyWidth": 1351,
+      "title": "Relatórios",
+      "actionsBottom": null,
+      "buttons": []
+    },
+    {
+      "path": "/tickets",
+      "width": 1366,
+      "height": 768,
+      "scrollWidth": 1366,
+      "bodyWidth": 1366,
+      "title": "Tickets",
+      "actionsBottom": null,
+      "buttons": []
+    },
+    {
+      "path": "/configuracoes",
+      "width": 1366,
+      "height": 768,
+      "scrollWidth": 1351,
+      "bodyWidth": 1351,
+      "title": "Configurações",
+      "actionsBottom": null,
+      "buttons": []
+    }
+  ],
+  "checks": [
+    "Contexto selecionado sem aplicar",
+    "Aba Cadastro: Remetentes / Destinatários",
+    "Aba Cadastro: Transportadoras",
+    "Aba Cadastro: Motoristas",
+    "Aba Cadastro: Placas",
+    "Aba Cadastro: Operações",
+    "Aba Cadastro: Itens / Produtos",
+    "Aba Cadastro: Unidades",
+    "Relatório: Relatório de Pesagens",
+    "Relatório: Relatório de Tickets",
+    "Relatório: Relatório de Itens",
+    "Relatório: Relatório de Remetentes / Destinatários",
+    "Relatório: Relatório de Transportadoras",
+    "Relatório: Relatório de Motoristas",
+    "Relatório: Relatório de Depósitos",
+    "Relatório: Relatório de Unidades",
+    "Relatório: Relatório de Operações",
+    "Estação única selecionada automaticamente",
+    "Configuração isolada da outra estação",
+    "Configuração recuperada ao retornar à estação",
+    "SGV OFF oculta painel",
+    "Dispositivos independentes: nenhum",
+    "Dispositivos independentes: Cancelas",
+    "Dispositivos independentes: Semáforos",
+    "Dispositivos independentes: Display",
+    "Display sanitizado",
+    "Display recortado",
+    "Fonte digital carregada",
+    {
+      "name": "Larguras das LOVs de equipamentos",
+      "fields": [
+        {
+          "label": "Cancela de Entrada",
+          "width": 220
+        },
+        {
+          "label": "Cancela de Saída",
+          "width": 220
+        }
+      ]
+    },
+    "Hastes abertas contidas na cena e semáforos verdes",
+    "Abertura/fechamento manual e regra F10",
+    "Emissao mock e Code39",
+    "Cancelamento logico",
+    "Reimpressao cancelada preserva marca",
+    "Cadastro inclusao/edicao/pesquisa",
+    "Inativacao sem exclusao fisica",
+    "Relatorio pesagens com dados",
+    "Relatorio tickets separado e atualizado"
+  ],
+  "errors": []
+}

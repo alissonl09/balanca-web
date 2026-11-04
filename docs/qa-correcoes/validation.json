@@ -1,0 +1,19 @@
+{
+  "tests": {
+    "command": "npm test -- --watch=false --browsers=ChromeHeadless",
+    "passed": 84
+  },
+  "build": {
+    "command": "npm run build",
+    "passed": true,
+    "cssBudgetWarnings": 4,
+    "lintScript": false
+  },
+  "browser": {
+    "command": "node scripts/manual-review.mjs",
+    "viewportCaptures": 15,
+    "totalScreenshots": 18,
+    "checks": 38,
+    "runtimeErrors": 0
+  }
+}

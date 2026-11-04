@@ -1,0 +1,37 @@
+﻿[
+    {
+        "asset":  "balanca_icon.svg",
+        "reference":  "D:\\Repositorios\\balanca_desktop\\assets\\images\\balanca_icon.svg",
+        "reusedWithoutChange":  true
+    },
+    {
+        "asset":  "config.svg",
+        "reference":  "D:\\Repositorios\\balanca_desktop\\assets\\images\\config.svg",
+        "reusedWithoutChange":  true
+    },
+    {
+        "asset":  "imprimir-pesagem.svg",
+        "reference":  "D:\\Repositorios\\balanca_desktop\\assets\\images\\imprimir-pesagem.svg",
+        "reusedWithoutChange":  true
+    },
+    {
+        "asset":  "logo-topo.svg",
+        "reference":  "D:\\Repositorios\\balanca_desktop\\assets\\images\\logo-topo.svg",
+        "reusedWithoutChange":  true
+    },
+    {
+        "asset":  "resumo_pesagem.svg",
+        "reference":  "D:\\Repositorios\\balanca_desktop\\assets\\images\\resumo_pesagem.svg",
+        "reusedWithoutChange":  true
+    },
+    {
+        "asset":  "salvar-pesagem.svg",
+        "reference":  "D:\\Repositorios\\balanca_desktop\\assets\\images\\salvar-pesagem.svg",
+        "reusedWithoutChange":  true
+    },
+    {
+        "asset":  "truck.svg",
+        "reference":  "D:\\Repositorios\\balanca_desktop\\assets\\images\\truck.svg",
+        "reusedWithoutChange":  true
+    }
+]

@@ -10,44 +10,23 @@
       />
 
       <div class="header-context">
-        <strong>Alisson Rodrigues Romano</strong>
+        <strong>Sistema de Gerenciamento de Pesagens</strong>
 
-        <span>
-          Matriz Cooxupé
-          <span class="header-separator">•</span>
-          Sistema de Pesagem
-        </span>
+        <span>{{ station.contexto()?.unidade?.descricao ?? 'Unidade sem contexto' }} | {{ station.contexto()?.estacao?.descricao ?? 'Selecione uma estacao' }}</span>
       </div>
     </div>
 
     <div class="profile-area">
-      <button
-        type="button"
-        class="notification-button"
-        aria-label="Notificações"
-      >
-        ♧
-      </button>
-
-      <div class="profile-avatar">
-        AR
-      </div>
-
-      <div class="profile-description">
-        <strong>Alisson Romano</strong>
-        <span>Operador</span>
-      </div>
-
-      <span class="profile-arrow">
-        ⌄
-      </span>
+      <span class="station-status" role="status">{{ session.online }} | {{ session.pending }} pendências (mock)</span>
+      <button class="user-trigger" aria-label="Menu do usuário" [attr.aria-expanded]="userMenu" (click)="userMenu = !userMenu" (keydown.escape)="userMenu = false"><span class="profile-avatar">{{ session.user.charAt(0) + session.user.split(' ').slice(-1)[0].charAt(0) }}</span><span class="profile-description"><strong>{{ session.user }}</strong><span>{{ session.profile }} | demonstração</span></span><svg class="ui-icon user-chevron" aria-hidden="true"><use href="/images/ui-icons.svg#chevron"/></svg></button>
+      @if (userMenu) { <div class="user-menu"><div class="user-menu-header"><span class="profile-avatar">{{ session.user.charAt(0) + session.user.split(' ').slice(-1)[0].charAt(0) }}</span><div><strong>{{ session.user }}</strong><p>{{ session.profile }}</p></div></div><button (click)="userDialog = 'switch'; userMenu = false; nextUser = ''"><svg class="ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#switch-user"/></svg>Trocar usuário</button><button (click)="userDialog = 'logout'; userMenu = false"><svg class="ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#logout"/></svg>Logout</button></div> }
     </div>
   </header>
 
   <div class="workspace">
 
     <!-- Menu lateral -->
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Menu principal">
 
       <!-- Pesagem -->
       <button
@@ -56,11 +35,7 @@
         routerLink="/pesagem"
         routerLinkActive="active"
       >
-        <img
-          src="/images/balanca_icon.svg"
-          alt=""
-          class="menu-image"
-        />
+        <span class="menu-image asset-icon weighing-menu-icon" style="--asset:url(/images/balanca_icon.svg)" aria-hidden="true"></span>
 
         <span>Pesagem</span>
       </button>
@@ -68,29 +43,24 @@
       <!-- Veículos -->
       <button
         type="button"
-        class="menu-item"
+        class="menu-item" [title]="auth.can('readRegistry') ? 'Cadastros' : 'Seu perfil não possui permissão para consultar cadastros. Troque o usuário de demonstração ou solicite a parametrização do perfil.'" routerLink="/cadastros" routerLinkActive="active"
       >
-        <img
-          src="/images/truck.svg"
-          alt=""
-          class="menu-image"
-        />
+        <svg class="menu-image ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#badge"/></svg>
 
-        <span>Veículos</span>
+        <span>Cadastros</span>
       </button>
 
+      <button type="button" class="menu-item" [title]="auth.can('readReports') ? 'Relatórios' : 'Seu perfil não possui permissão para consultar relatórios. Troque o usuário de demonstração ou solicite a parametrização do perfil.'" routerLink="/relatorios" routerLinkActive="active"><svg class="menu-image ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#assessment"/></svg><span>Relatórios</span></button>
+      <button type="button" class="menu-item" [disabled]="!auth.can('printTicket') && !auth.can('reprintTicket') && !auth.can('cancelTicket')" routerLink="/tickets" routerLinkActive="active"><svg class="menu-image ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#ticket"/></svg><span>Tickets</span></button>
       <!-- Configurações -->
       <button
         type="button"
         class="menu-item"
         routerLink="/configuracoes"
+        [disabled]="!canSettings()"
         routerLinkActive="active"
       >
-        <img
-          src="/images/config.svg"
-          alt=""
-          class="menu-image"
-        />
+        <span class="menu-image asset-icon" style="--asset:url(/images/config.svg)" aria-hidden="true"></span>
 
         <span>Configurações</span>
       </button>
@@ -104,3 +74,9 @@
 
   </div>
 </div>
+@if (userDialog || !session.loggedIn) {
+  <div class="session-backdrop"><section class="session-dialog" role="dialog" aria-modal="true" aria-labelledby="session-title">
+  @if (userDialog === 'logout' && session.loggedIn) { <h2 id="session-title">Sair do sistema?</h2><p>Sessão simulada localmente.</p><button (click)="session.logout(); userDialog = null">Sair</button><button (click)="userDialog = null">Cancelar</button> }
+  @else { <h2 id="session-title">Trocar usuário (mock)</h2><label>Nome<select [(ngModel)]="nextUser"><option value="">Selecione um usuário mock</option>@for (user of session.users; track user.id) { <option [value]="user.id">{{ user.name }}</option> }</select></label><button [disabled]="!nextUser.trim()" (click)="applyUser()">Entrar na demonstração</button>@if (session.loggedIn) { <button (click)="userDialog = null">Cancelar</button> } }
+  </section></div>
+}

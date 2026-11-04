@@ -1,497 +1,73 @@
-<div class="settings-page">
-  <section class="settings-card">
-    <!-- =====================================================
-         Cabeçalho
-         ===================================================== -->
+<section class="settings-card">
+  <div class="settings-heading"><span class="heading-icon"><span class="asset-icon" style="--asset:url(/images/config.svg)" aria-hidden="true"></span></span><h1>Configurações</h1></div><p>Gerencie os parâmetros de funcionamento do sistema de pesagem.</p>
+  <p class="notice">Configuração local de demonstração · memória por unidade/estação · nenhum equipamento físico é acessado.</p>
+  <nav class="tabs" aria-label="Configurações">@for (item of tabs; track item.id) { @if (item.id !== 'vehicles' || draft.general.sgv) { <button [attr.data-tab]="item.id" [class.selected]="tab === item.id" (click)="selectTab(item.id)">{{ item.label }}</button> } }</nav>
+  @if (!allowed()) { <section class="panel"><h2>Acesso restrito</h2><p>Perfil sem permissão para esta configuração.</p></section> }
+  @else {
+  @switch (tab) {
+    @case ('general') {
+      <section class="panel"><h2>Unidade e estação</h2><div class="grid">
+        <label class="field-lg">Unidade (LOV mock)<select [ngModel]="unitId" (ngModelChange)="changeUnit($event)"><option value="">Selecione</option>@for (unit of units; track unit.id) { <option [value]="unit.id">{{ unit.codigo }} - {{ unit.descricao }}</option> }</select></label>
+        <label class="field-md">Estação / balança<select [ngModel]="stationId" (ngModelChange)="changeStation($event)"><option value="">Selecione</option>@for (context of stations; track context.estacao.id) { <option [value]="context.estacao.id">{{ context.estacao.descricao }}</option> }</select></label><label class="field-md">Ambiente<select [(ngModel)]="draft.general.environment"><option>Produção</option><option>Homologação</option><option>Desenvolvimento</option></select></label><button (click)="selectContext()">Aplicar contexto</button>
+      </div><p>A troca carrega a configuração própria da estação. Rascunhos não salvos desta tela são descartados.</p></section>
+      <section class="panel"><h2>Pesagem manual</h2><p>Sem comunicação com o indicador, a pesagem manual permanece como contingência, mantendo a exigência de autorização.</p><label class="settings-toggle"><span><b>Pesagem Manual</b><small>{{ draft.general.manual ? 'Habilitada' : 'Desabilitada' }}</small></span><input type="checkbox" role="switch" [(ngModel)]="draft.general.manual" /></label></section>
+      <section class="panel"><h2>Integração com SGV</h2><p>Ativar exibe as opções de Gestão de Veículos. Nenhuma comunicação real é iniciada.</p><label class="settings-toggle"><span><b>Gestão de Veículos (SGV)</b><small>{{ draft.general.sgv ? 'Ativo' : 'Inativo' }}</small></span><input type="checkbox" role="switch" [(ngModel)]="draft.general.sgv" /></label></section>
 
-    <div class="settings-header">
-      <div class="settings-title">
-        <div class="settings-title-icon">
-          <img src="/images/config.svg" alt="Configurações" />
-        </div>
-
-        <div>
-          <h1>Configurações</h1>
-
-          <p>Gerencie os parâmetros de funcionamento do sistema de pesagem.</p>
-        </div>
+    }
+    @case ('vehicles') {
+      <section class="panel"><h2>Cancelas</h2><div class="gate-toggle-row"><label class="settings-toggle"><span><b>Cancelas</b><small>{{ draft.vehicles.gates ? 'Habilitadas' : 'Desabilitadas' }}</small></span><input type="checkbox" role="switch" [(ngModel)]="draft.vehicles.gates" /></label><button class="swap" aria-label="Inverter associação das cancelas" [disabled]="!draft.vehicles.gates" (click)="swapGates()"><svg class="ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#swap"/></svg></button></div><div class="grid"><label class="field-md">Cancela de Entrada<select [(ngModel)]="draft.vehicles.entryId" [disabled]="!draft.vehicles.gates"><option value="">Não parametrizada</option>@for (gate of gates; track gate.id) { <option [value]="gate.id" [disabled]="gate.id === draft.vehicles.exitId">{{ gate.name }}</option> }</select></label><label class="field-md">Cancela de Saída<select [(ngModel)]="draft.vehicles.exitId" [disabled]="!draft.vehicles.gates"><option value="">Não parametrizada</option>@for (gate of gates; track gate.id) { <option [value]="gate.id" [disabled]="gate.id === draft.vehicles.entryId">{{ gate.name }}</option> }</select></label></div></section>
+      <section class="panel"><h2>Equipamentos da estação</h2><div class="grid">
+        <label class="settings-toggle"><span><b>Semáforos</b><small>{{ draft.vehicles.lights ? 'Habilitados' : 'Desabilitados' }}</small></span><input type="checkbox" role="switch" [(ngModel)]="draft.vehicles.lights" /></label>
+        <label class="settings-toggle"><span><b>Display</b><small>{{ draft.vehicles.display ? 'Habilitado' : 'Desabilitado' }}</small></span><input type="checkbox" role="switch" [(ngModel)]="draft.vehicles.display" /></label>
+        @if (draft.vehicles.display) { <label class="field-lg">Mensagem do display<input maxlength="40" [(ngModel)]="draft.vehicles.message" /></label> }
+        <label class="settings-toggle"><span><b>OCR</b><small>{{ draft.vehicles.ocr ? 'Habilitado' : 'Desabilitado' }}</small></span><input type="checkbox" role="switch" [(ngModel)]="draft.vehicles.ocr" /></label>
+        <label class="settings-toggle"><span><b>Voz</b><small>{{ draft.vehicles.voice ? 'Habilitada' : 'Desabilitada' }}</small></span><input type="checkbox" role="switch" [(ngModel)]="draft.vehicles.voice" /></label>
       </div>
-    </div>
-
-    <!-- =====================================================
-     Abas
-     ===================================================== -->
-
-    <nav class="settings-tabs" aria-label="Categorias de configuração">
-      <!-- Configurações Gerais -->
-      <button
-        type="button"
-        class="settings-tab"
-        [class.active]="abaGeraisSelecionada"
-        (click)="selecionarAba('GERAIS')"
-      >
-        Configurações Gerais
-      </button>
-
-      <!-- Indicadores de Peso -->
-      <button
-        type="button"
-        class="settings-tab"
-        [class.active]="abaIndicadoresSelecionada"
-        (click)="selecionarAba('INDICADORES')"
-      >
-        Indicadores de Peso
-      </button>
-
-      <!-- Modelos de Indicadores -->
-      <button
-        type="button"
-        class="settings-tab"
-        [class.active]="abaModelosSelecionada"
-        (click)="selecionarAba('MODELOS')"
-      >
-        Modelos de Indicadores
-      </button>
-    </nav>
-    <!-- =====================================================
-     ABA: CONFIGURAÇÕES GERAIS
-     ===================================================== -->
-
-    @if (abaGeraisSelecionada) {
-      <section class="settings-content">
-        <!-- Cabeçalho -->
-        <div class="settings-section-header">
-          <div>
-            <h2>Configurações Gerais</h2>
-
-            <p>Defina os parâmetros gerais utilizados por esta estação de pesagem.</p>
-          </div>
-        </div>
-
-        <!-- =================================================
-         Unidade da balança
-         ================================================= -->
-
-        <section class="config-group">
-          <div class="config-group-title">
-            <h3>Unidade da balança</h3>
-
-            <p>Informe a unidade à qual esta estação de pesagem pertence.</p>
-          </div>
-
-          <div class="config-fields">
-            
-            <div class="config-field general-unit-field">
-              <label for="balance-unit"> Unidade </label>
-
-              <input
-                id="balance-unit"
-                type="number"
-                min="1"
-                placeholder="Ex.: 4"
-                [(ngModel)]="codigoUnidadeBalanca"
-              />
-
-              <small class="config-field-hint">
-                Esta unidade será utilizada automaticamente nas operações realizadas pela tela de
-                Pesagem.
-              </small>
-            </div>
-          </div>
-        </section>
-
-        <!-- =================================================
-         Mensagem
-         ================================================= -->
-
-        @if (mensagemConfiguracaoGeral) {
-          <div
-            class="settings-message"
-            [class.success]="tipoMensagemConfiguracaoGeral === 'sucesso'"
-            [class.error]="tipoMensagemConfiguracaoGeral === 'erro'"
-          >
-            {{ mensagemConfiguracaoGeral }}
-          </div>
-        }
-
-        <!-- =================================================
-         Ações
-         ================================================= -->
-
-        <div class="settings-actions">
-          <button type="button" class="primary-button" (click)="salvarConfiguracoesGerais()">
-            Salvar configurações
-          </button>
-        </div>
-      </section>
+      @if (draft.vehicles.ocr) { <div class="grid"><label class="field-lg">Endereço OCR<input [(ngModel)]="draft.vehicles.address" /></label><label class="field-sm">Porta OCR<input type="number" min="1" max="65535" [(ngModel)]="draft.vehicles.port" /></label><label class="field-lg">Token OCR (somente sessão)<input type="password" autocomplete="off" [(ngModel)]="draft.vehicles.token" /></label></div> }
+      <p>OCR e voz: somente configuração. Sem integração ou engine ativa.</p></section>
     }
-    <!-- =====================================================
-         ABA: INDICADORES DE PESO
-         ===================================================== -->
-
-    @if (abaIndicadoresSelecionada) {
-      <section class="settings-content">
-        <!-- =================================================
-             Cabeçalho da seção
-             ================================================= -->
-
-        <div class="settings-section-header">
-          <div>
-            <h2>Indicadores de Peso</h2>
-
-            <p>
-              Configure os indicadores e o tipo de comunicação utilizado para receber as informações
-              de peso.
-            </p>
-          </div>
+    @case ('indicators') {
+      <button (click)="addIndicator()"><svg class="ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#plus"/></svg>Adicionar indicador</button><button [disabled]="!auth.can('indicatorModels')" (click)="importIndicator()">Importar indicador legado explicitamente</button>
+      @for (indicator of draft.indicators; track indicator.id) {
+        <section class="panel"><div class="grid">
+          <label class="field-lg">Nome<input [(ngModel)]="indicator.name" /></label><label class="field-lg">Modelo<select [(ngModel)]="indicator.modelId" (ngModelChange)="selectModel(indicator)"><option value="">Selecione</option>@for (model of catalog.models(); track model.id) { <option [value]="model.id" [disabled]="!model.active">{{ model.name }}</option> }</select></label>
+          <label class="field-sm">Status<select [(ngModel)]="indicator.active"><option [ngValue]="true">Ativo</option><option [ngValue]="false">Inativo</option></select></label>
+          <label class="field-md">Comunicação<select [(ngModel)]="indicator.communication"><option [disabled]="!model(indicator.modelId)?.serial">Serial</option><option [disabled]="!model(indicator.modelId)?.tcp">TCP/IP</option></select></label>
         </div>
-
-        <!-- =================================================
-             Tipo de comunicação
-             ================================================= -->
-
-        <section class="config-group">
-          <div class="config-group-title">
-            <h3>Tipo de comunicação</h3>
-
-            <p>Selecione como o computador receberá as informações do indicador.</p>
-          </div>
-
-          <div class="communication-options">
-            <!-- Serial -->
-            <button
-              type="button"
-              class="communication-option"
-              [class.active]="comunicacaoSerialSelecionada"
-              (click)="selecionarComunicacao('SERIAL')"
-            >
-              <div class="communication-option-marker">
-                <span></span>
-              </div>
-
-              <div class="communication-option-text">
-                <strong>Serial / RS-232</strong>
-
-                <span> Comunicação através de uma porta COM local. </span>
-              </div>
-            </button>
-
-            <!-- TCP/IP -->
-            <button
-              type="button"
-              class="communication-option"
-              [class.active]="comunicacaoTcpSelecionada"
-              (click)="selecionarComunicacao('TCP_IP')"
-            >
-              <div class="communication-option-marker">
-                <span></span>
-              </div>
-
-              <div class="communication-option-text">
-                <strong>TCP/IP</strong>
-
-                <span> Comunicação através da rede Ethernet. </span>
-              </div>
-            </button>
-          </div>
-        </section>
-
-        <!-- =================================================
-             Modelo do indicador
-             ================================================= -->
-
-        <section class="config-group">
-          <div class="config-group-title">
-            <h3>Indicador</h3>
-
-            <p>Informe o modelo do indicador de peso conectado à balança.</p>
-          </div>
-
-          <div class="config-fields">
-            <div class="config-field indicator-model-field">
-              <label for="indicator-model"> Modelo do indicador </label>
-
-              <select
-                id="indicator-model"
-                [ngModel]="modeloIndicador"
-                (ngModelChange)="selecionarModeloIndicador($event)"
-              >
-                <option value="">Selecione o modelo</option>
-
-                @for (modelo of modelosIndicadores; track modelo.id) {
-                  <option [value]="modelo.id">{{ modelo.fabricante }} {{ modelo.modelo }}</option>
-                }
-              </select>
-            </div>
-          </div>
-        </section>
-
-        <!-- =================================================
-     SERIAL
-     ================================================= -->
-
-        @if (comunicacaoSerialSelecionada) {
-          <section class="config-group">
-            <div class="config-group-title">
-              <h3>Configuração Serial</h3>
-
-              <p>
-                Configure a porta utilizada nesta estação. Os parâmetros de comunicação são
-                definidos no cadastro do modelo do indicador.
-              </p>
-            </div>
-
-            <div class="serial-compact-layout">
-              <!-- =================================================
-           Porta COM
-           ================================================= -->
-
-              <div class="config-field">
-                <label for="serial-port"> Porta COM </label>
-
-                <div class="serial-port-row">
-                  <select id="serial-port" [(ngModel)]="portaSerial">
-                    <option value="">Selecione a porta</option>
-
-                    @for (porta of portasSeriais; track porta) {
-                      <option [value]="porta">
-                        {{ porta }}
-                      </option>
-                    }
-                  </select>
-
-                  @if (portaSerialAutorizada) {
-                    <div class="port-linked-status">
-                      <span class="port-linked-icon"> ✓ </span>
-
-                      <span> Dispositivo autorizado </span>
-                    </div>
-                  } @else {
-                    <button
-                      type="button"
-                      class="link-port-button"
-                      [disabled]="!portaSerial || testandoComunicacao || comunicacaoConectada"
-                      (click)="autorizarPortaSerial()"
-                    >
-                      Vincular porta
-                    </button>
-                  }
-                </div>
-
-                <small class="config-field-hint">
-                  Selecione a porta configurada no Windows. A autorização do dispositivo é
-                  necessária somente na configuração inicial da estação.
-                </small>
-              </div>
-
-              <!-- =================================================
-           Parâmetros de comunicação
-           ================================================= -->
-
-              <div class="serial-parameters-card">
-                <div class="serial-parameters-header">
-                  <div>
-                    <span class="serial-parameters-label"> Parâmetros de comunicação </span>
-
-                    <strong class="serial-parameters-value">
-                      {{ resumoConfiguracaoSerial }}
-                    </strong>
-                  </div>
-
-                  <span class="serial-parameters-origin"> Padrão do modelo </span>
-                </div>
-
-                <div class="serial-parameters-hint">
-                  <span class="serial-parameters-hint-icon"> i </span>
-
-                  <span> Estes parâmetros são definidos no cadastro do modelo do indicador. </span>
-                </div>
-              </div>
-            </div>
-          </section>
-        }
-
-        <!-- =================================================
-            TCP/IP
-        ================================================= -->
-
-        @if (comunicacaoTcpSelecionada) {
-          <section class="config-group">
-            <div class="config-group-title">
-              <h3>Configuração TCP/IP</h3>
-
-              <p>Defina os parâmetros utilizados para comunicação pela rede.</p>
-            </div>
-
-            <div class="serial-fields">
-              <!-- Modo -->
-              <div class="config-field">
-                <label for="tcp-mode"> Modo de conexão </label>
-
-                <select id="tcp-mode" [(ngModel)]="modoTcp">
-                  <option value="CLIENT">Cliente TCP</option>
-
-                  <option value="SERVER">Servidor TCP</option>
-                </select>
-              </div>
-
-              <!-- IP -->
-              <div class="config-field">
-                <label for="tcp-ip"> Endereço IP </label>
-
-                <input
-                  id="tcp-ip"
-                  type="text"
-                  placeholder="Ex.: 172.16.243.100"
-                  [(ngModel)]="enderecoIp"
-                />
-              </div>
-
-              <!-- Porta TCP -->
-              <div class="config-field">
-                <label for="tcp-port"> Porta TCP </label>
-
-                <input
-                  id="tcp-port"
-                  type="number"
-                  min="1"
-                  max="65535"
-                  placeholder="Ex.: 4001"
-                  [(ngModel)]="portaTcp"
-                />
-              </div>
-
-              <!-- Timeout -->
-              <div class="config-field">
-                <label for="tcp-timeout"> Timeout (segundos) </label>
-
-                <input id="tcp-timeout" type="number" min="1" [(ngModel)]="timeoutTcp" />
-              </div>
-
-              <!-- Reconexão -->
-              <div class="config-field">
-                <label for="tcp-reconnect"> Reconexão automática </label>
-
-                <select id="tcp-reconnect" [(ngModel)]="reconexaoAutomatica">
-                  <option [ngValue]="true">Sim</option>
-
-                  <option [ngValue]="false">Não</option>
-                </select>
-              </div>
-            </div>
-          </section>
-        }
-
-        <!-- =================================================
-             Teste da comunicação
-             ================================================= -->
-
-        <section class="config-group communication-test">
-          <div class="config-group-title">
-            <h3>Teste da comunicação</h3>
-
-            <p>Verifique se o sistema está recebendo dados do indicador.</p>
-          </div>
-
-          <div class="communication-status">
-            <!-- Status e ações -->
-            <div class="communication-status-header">
-              <div class="status-information">
-                <span class="connection-dot" [class.connected]="comunicacaoConectada"></span>
-
-                <strong>
-                  {{ comunicacaoConectada ? 'Conectado' : 'Desconectado' }}
-                </strong>
-              </div>
-
-              <div class="communication-actions">
-                <button
-                  type="button"
-                  class="test-connection-button"
-                  [class.disconnect]="comunicacaoConectada"
-                  [disabled]="testandoComunicacao"
-                  (click)="testarComunicacao()"
-                >
-                  @if (testandoComunicacao) {
-                    Conectando...
-                  } @else if (comunicacaoConectada) {
-                    Desconectar
-                  } @else {
-                    Testar comunicação
-                  }
-                </button>
-              </div>
-            </div>
-
-            <!-- Mensagem da comunicação -->
-            @if (mensagemTesteComunicacao) {
-              <div class="communication-test-message">
-                {{ mensagemTesteComunicacao }}
-              </div>
-            }
-
-            <!-- Dados recebidos -->
-            <div class="communication-result">
-              <div class="communication-result-item">
-                <span> Último dado recebido </span>
-
-                <strong class="received-data">
-                  {{ ultimoDadoRecebido ? ultimoDadoRecebido : 'Nenhum dado recebido' }}
-                </strong>
-              </div>
-
-              <div class="communication-result-item">
-                <span> Peso interpretado </span>
-
-                <strong>
-                  @if (pesoInterpretado !== null) {
-                    {{ pesoInterpretado | number: '1.0-0' : 'pt-BR' }}
-                    Kg
-                  } @else {
-                    -- Kg
-                  }
-                </strong>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- =================================================
-             Mensagem da configuração
-             ================================================= -->
-
-        @if (mensagemConfiguracao) {
-          <div
-            class="settings-message"
-            [class.success]="tipoMensagemConfiguracao === 'sucesso'"
-            [class.error]="tipoMensagemConfiguracao === 'erro'"
-          >
-            {{ mensagemConfiguracao }}
-          </div>
-        }
-
-        <!-- =================================================
-             Ações
-             ================================================= -->
-
-        <div class="settings-actions">
-          <button type="button" class="secondary-button">Cancelar</button>
-
-          <button type="button" class="primary-button" (click)="salvarConfiguracoes()">
-            Salvar configurações
-          </button>
-        </div>
-      </section>
+        @if (indicator.communication === 'Serial') { <div class="grid serial-fields">
+          <label class="field-md">Porta COM<input placeholder="COM1 (da estação)" [(ngModel)]="indicator.com" /></label>
+          <label class="field-sm">Baud Rate<select [(ngModel)]="indicator.baudRate"><option [ngValue]="null">Selecione</option>@for (value of model(indicator.modelId)?.baudRates ?? []; track value) { <option [ngValue]="value">{{ value }}</option> }</select></label>
+          <label class="field-sm">Data Bits<select [(ngModel)]="indicator.dataBits"><option [ngValue]="null">Selecione</option>@for (value of model(indicator.modelId)?.dataBits ?? []; track value) { <option [ngValue]="value">{{ value }}</option> }</select></label>
+          <label class="field-sm">Paridade<select [(ngModel)]="indicator.parity"><option value="">Selecione</option>@for (value of model(indicator.modelId)?.parities ?? []; track value) { <option>{{ value }}</option> }</select></label>
+          <label class="field-sm">Stop Bits<select [(ngModel)]="indicator.stopBits"><option [ngValue]="null">Selecione</option>@for (value of model(indicator.modelId)?.stopBits ?? []; track value) { <option [ngValue]="value">{{ value }}</option> }</select></label>
+          <label class="field-md">Controle de fluxo<select [(ngModel)]="indicator.flowControl"><option value="">Selecione</option>@for (value of model(indicator.modelId)?.flowControls ?? []; track value) { <option>{{ value }}</option> }</select></label>
+        </div> } @else { <div class="grid tcp-fields"><label class="field-md">IP<input [(ngModel)]="indicator.ip" /></label><label class="field-sm">Porta<input type="number" min="1" max="65535" [(ngModel)]="indicator.port" /></label><label class="field-sm">Timeout (ms)<input type="number" min="1" [(ngModel)]="indicator.timeout" /></label><label class="field-md">Intervalo de reconexão (ms)<input type="number" min="1" [(ngModel)]="indicator.reconnect" /></label></div> }
+        <label class="field-lg">Protocolo / Formato<select [(ngModel)]="indicator.protocol"><option value="">Selecione</option>@for (value of model(indicator.modelId)?.protocols ?? []; track value) { <option>{{ value }}</option> }</select></label>
+        <p>Parâmetros pertencem ao agente da estação. Nunca são usados para abrir COM/socket no navegador.</p>
+        <button [disabled]="testing || !indicator.active" (click)="test(indicator)"><svg class="ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#link"/></svg>Testar conexão</button></section>
+      } @empty { <p>Nenhum indicador configurado. Adicione uma instalação e escolha um modelo.</p> }
+      <label class="field-lg">Resultado simulado do diagnóstico<select [(ngModel)]="diagnosticScenario">@for (scenario of scenarios; track scenario) { <option>{{ scenario }}</option> }</select></label><p role="status">{{ diagnostic }}</p>
     }
-
-    <!-- =====================================================
-         ABA: MODELOS DE INDICADORES
-         ===================================================== -->
-
-    @if (abaModelosSelecionada) {
-      <section class="settings-content">
-        <app-modelos-indicadores />
-      </section>
+    @case ('models') {
+      <p>Capacidades documentadas do modelo. IND560, G10K e 9700 aguardam documentação técnica, conforme Flutter.</p><button (click)="editModel()"><svg class="ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#plus"/></svg>Novo modelo</button><button (click)="importModels()">Importar catálogo legado explicitamente</button>
+      <div class="model-list">@for (model of catalog.models(); track model.id) { <button (click)="editModel(model)">{{ model.name }} · {{ model.active ? 'Ativo' : 'Inativo' }}</button> }</div>
+      @if (modelDraft; as model) { <section class="panel"><div class="grid"><label class="field-md">Código<input [(ngModel)]="model.id" [readonly]="!creatingModel" /></label><label class="field-lg">Nome<input [(ngModel)]="model.name" /></label><label class="field-md">Ativo<input type="checkbox" [(ngModel)]="model.active" /></label><label class="field-md">Serial suportado<input type="checkbox" [(ngModel)]="model.serial" /></label><label class="field-md">TCP/IP suportado<input type="checkbox" [(ngModel)]="model.tcp" /></label></div>
+        <p>Separe capacidades por ponto e vírgula. Valores desconhecidos devem permanecer vazios.</p><div class="grid">
+        <label class="field-lg">Protocolos<input [ngModel]="model.protocols.join(';')" (ngModelChange)="arrayChange('protocols',$event)" /></label><label class="field-md">Baud rates<input [ngModel]="model.baudRates.join(';')" (ngModelChange)="arrayChange('baudRates',$event)" /></label><label class="field-md">Data bits<input [ngModel]="model.dataBits.join(';')" (ngModelChange)="arrayChange('dataBits',$event)" /></label><label class="field-sm">Paridades<input [ngModel]="model.parities.join(';')" (ngModelChange)="arrayChange('parities',$event)" /></label><label class="field-md">Stop bits<input [ngModel]="model.stopBits.join(';')" (ngModelChange)="arrayChange('stopBits',$event)" /></label><label class="field-md">Flow control<input [ngModel]="model.flowControls.join(';')" (ngModelChange)="arrayChange('flowControls',$event)" /></label></div><button (click)="saveModel()"><svg class="ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#check"/></svg>Salvar modelo</button><button (click)="modelDraft = null">Cancelar</button></section> }
     }
-  </section>
-</div>
+    @case ('printing') {
+      <section class="panel"><h2>Logomarca / imagem do ticket</h2>@if (draft.printing.logo === 'standard') { <img class="logo" src="/images/logo-topo.svg" alt="Cooxupé" /> } @else { <strong class="demo-logo">LOGO DEMONSTRAÇÃO</strong> }<button (click)="draft.printing.logo = 'demo'">Trocar logo (mock)</button><button (click)="draft.printing.logo = 'standard'">Restaurar padrão</button></section>
+      <section class="panel"><h2>Configurar impressora</h2><div class="grid"><label class="field-lg">Impressora<select [(ngModel)]="draft.printing.printerId">@for (printer of printers; track printer.id) { <option [value]="printer.id">{{ printer.name }}</option> }</select></label><label class="field-lg">A4 fallback<select [(ngModel)]="draft.printing.fallbackId">@for (printer of printers; track printer.id) { @if (printer.type === 'A4') { <option [value]="printer.id">{{ printer.name }}</option> } }</select></label><label class="field-sm">Quantidade de cópias<input type="number" min="1" max="10" [(ngModel)]="draft.printing.copies" /></label></div>
+      @for (id of [draft.printing.printerId, draft.printing.fallbackId]; track $index) { <fieldset><legend>{{ printerOption(id).name }}</legend><p>Status: {{ printerOption(id).status }} · Tipo: {{ printerOption(id).type }} · Conexão: {{ printerOption(id).connection }}</p><div class="grid"><label class="field-md">Papel<select [(ngModel)]="paper(id).size">@for (size of printerOption(id).sizes; track size) { <option>{{ size }}</option> }</select></label><label class="field-md">Origem<select [(ngModel)]="paper(id).source">@for (source of printerOption(id).sources; track source) { <option>{{ source }}</option> }</select></label><label class="field-md">Orientação<select [(ngModel)]="paper(id).orientation"><option>Retrato</option><option>Paisagem</option></select></label></div></fieldset> }
+      <div class="grid"><label class="field-md">Ticket na entrada<input type="checkbox" [(ngModel)]="draft.printing.entry" /></label><label class="field-md">Ticket na saída<input type="checkbox" [(ngModel)]="draft.printing.exit" /></label><label class="field-md">Ticket Windows (somente preferência)<input type="checkbox" [(ngModel)]="draft.printing.windowsTicket" /></label><label class="field-lg">Cabeçalho<input [(ngModel)]="draft.printing.header" /></label><label class="field-lg">Rodapé<input [(ngModel)]="draft.printing.footer" /></label></div><button (click)="preview('Ticket')"><svg class="ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#ticket"/></svg>Visualizar Ticket</button><button (click)="preview('A4')"><svg class="ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#ticket"/></svg>Visualizar A4 fallback</button><p>Sem descoberta de impressoras, spooler ou troca automática para fallback.</p></section>
+    }
+    @case ('permissions') {
+      <section class="panel"><h2>Matriz de permissões</h2><p>Master permanece com todos os recursos. Administradores podem parametrizar perfis. Cancelamento de ticket é lógico; não existe exclusão de ticket.</p><div class="matrix"><table><thead><tr><th>Recurso</th>@for (profile of auth.profiles(); track profile.code) { <th>{{ profile.code }} — {{ profile.name }}</th> }</tr></thead><tbody>@for (permission of permissions; track permission[0]) { <tr><th>{{ permission[1] }}</th>@for (profile of auth.profiles(); track profile.code) { <td><input type="checkbox" [attr.aria-label]="profile.name + ': ' + permission[1]" [checked]="profile.code === 0 || profile.grants.includes(permission[0])" [disabled]="profile.code === 0 || !auth.can('manageProfiles')" (change)="grant(profile.code,permission[0],$any($event.target).checked)" /></td> }</tr> }</tbody></table></div></section>
+      <section class="panel"><h2>Usuários (diretório mock)</h2><label class="field-lg">Pesquisar nome/matrícula<input [(ngModel)]="query" /></label>@for (user of auth.search(query); track user.id) { <div class="grid"><span>{{ user.name }} — {{ user.registration }}</span><select [ngModel]="user.profile" (ngModelChange)="assign(user.id,$event)" [disabled]="!auth.can('assignProfile')">@for (profile of auth.profiles(); track profile.code) { <option [ngValue]="profile.code">{{ profile.code }} — {{ profile.name }}</option> }</select></div> }<p>Identidade/AD preparados por abstração, sem senhas armazenadas.</p></section>
+    }
+  }
+  @if (tab !== 'models' && tab !== 'permissions') { <button class="save" (click)="save()"><svg class="ui-icon" aria-hidden="true"><use href="/images/ui-icons.svg#check"/></svg>Salvar configurações</button> }
+  }
+  <p role="status" class="message">{{ message }}</p>
+</section>
+@if (previewDocument) { <div class="preview-backdrop"><section class="preview-modal" role="dialog" aria-modal="true" aria-label="Preview de impressão"><button (click)="previewDocument = null">Fechar preview</button><app-print-preview [document]="previewDocument" /></section></div> }

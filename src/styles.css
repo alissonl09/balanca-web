@@ -1,17 +1,18 @@
-* {
-  box-sizing: border-box;
+/* Visual reference: balanca_desktop/core/theme + PesagemLayout. */
+:root{
+ --color-primary:#00543c;--color-background:#f4f5f5;--color-pale:#e5eeeb;--color-border:#dee2e6;--color-input-border:#ced4da;
+ --color-text:#343a40;--color-heading:#27453d;--color-muted:#6c757d;--color-readonly:#f8f9fa;
+ --control-height:36px;--action-height:48px;--display-height:100px;--section-pad:10px;--panel-pad:10px;--space:10px;--field-gap:4px;
+ --radius:10px;--input-radius:7px;--button-radius:8px;--shadow:0 3px 12px #00000014;
+ --icon-small:20px;--icon-action:26px;--icon-menu:34px;--queue-row-height:34px;--font-label:14px;--font-section:17px;--font-help:13px;
 }
-
-html,
-body {
-  margin: 0;
-  min-height: 100%;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #00543c;
-}
-
-button,
-input,
-textarea {
-  font-family: inherit;
-}
+@media(min-width:1800px) and (min-height:1000px){:root{--queue-row-height:39px;--control-height:40px;--action-height:54px;--display-height:122px;--section-pad:14px;--panel-pad:12px;--space:14px}}
+@media(max-height:850px) and (min-width:1051px){:root{--queue-row-height:30px;--control-height:34px;--action-height:42px;--display-height:88px;--section-pad:8px;--panel-pad:8px;--space:4px;--field-gap:3px}}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:var(--color-primary);color:var(--color-text)}
+button,input,select,textarea{font-family:inherit}button{font-weight:600}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}
+.ui-icon{display:inline-block;width:var(--icon-small);height:var(--icon-small);max-width:var(--icon-small);max-height:var(--icon-small);flex:0 0 var(--icon-small);vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.asset-icon{display:inline-block;background:currentColor;mask:var(--asset) center/contain no-repeat;width:var(--icon-small);height:var(--icon-small);flex:0 0 var(--icon-small);pointer-events:none}
+button>.ui-icon,button>.asset-icon{margin-right:6px}img{object-fit:contain}button:disabled{cursor:default!important;opacity:1!important;color:#6c757d;background:#f8f9fa;border-color:var(--color-border)}button:not(:disabled):active{transform:translateY(1px)}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.page-heading,.settings-heading{display:flex;align-items:center;gap:14px}.heading-icon{width:44px;height:44px;max-width:44px;max-height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:9px;background:var(--color-pale);color:var(--color-primary)}.heading-icon .ui-icon,.heading-icon .asset-icon{width:27px;height:27px;max-width:27px;max-height:27px;flex-basis:27px}

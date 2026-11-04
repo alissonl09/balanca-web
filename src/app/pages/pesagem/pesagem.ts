@@ -1,665 +1,260 @@
+import { PageHeadingComponent } from '../../shared/components/page-heading';
+import { WeighingActionsComponent } from '../../shared/components/weighing-actions';
+import { WeightPanelsComponent } from '../../shared/components/weight-panels';
+import { GateSceneComponent } from '../../shared/components/gate-scene';
+import { InformationDisplayComponent } from '../../shared/components/information-display';
 import { CommonModule } from '@angular/common';
-
 import { HttpErrorResponse } from '@angular/common/http';
-
-import { Component, OnDestroy, OnInit } from '@angular/core';
-
+import { Component, ElementRef, HostListener, OnDestroy, ViewChild, inject, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-
 import { Subscription } from 'rxjs';
-
-import { IndicadorPesoConfiguracao } from '../../models/indicador.model';
-
+import { StationContext } from '../../core/state/station-context';
+import { DemoSession } from '../../core/state/demo-session';
+import { StationSettingsService, gateOptions } from '../../core/state/station-settings.service';
+import { PermissionService } from '../../core/state/permission.service';
+import { PrintGatewayService, PrintDocument } from '../../core/integrations/print-gateway';
+import { PrintPreviewComponent } from '../../shared/components/print-preview';
+import { StationIndicator } from '../../core/integrations/station-indicator';
+import { LeituraEstacao } from '../../core/models/station';
 import { PreTicketResponse } from '../../models/pre-ticket-response';
-
 import { ConfiguracaoGeralService } from '../../services/configuracao-geral.service';
-
-import { IndicadorPesoService } from '../../services/indicador-peso.service';
-
 import { PreTicketService } from '../../services/pre-ticket.service';
+import { Action, fields, normalizePlate, PesagemState, Preview, PRINT_PORT } from './pesagem-state';
+import { PesagemMocks } from './pesagem-mocks';
 
-@Component({
-  selector: 'app-pesagem',
-
-  standalone: true,
-
-  imports: [CommonModule, FormsModule],
-
-  templateUrl: './pesagem.html',
-
-  styleUrl: './pesagem.css',
-})
-export class Pesagem implements OnInit, OnDestroy {
-  // =========================================================
-  // Dados da estação / operador
-  // =========================================================
-
-  /*
-   * A unidade não é mais informada pelo operador
-   * na tela de Pesagem.
-   *
-   * Ela vem das Configurações Gerais da estação.
-   */
-  cdUnidadeBalanca: number | null = null;
-
-  placa = '';
-
-  // =========================================================
-  // Pré-ticket
-  // =========================================================
-
+@Component({ selector: 'app-pesagem', standalone: true, imports: [CommonModule, FormsModule, PrintPreviewComponent, WeightPanelsComponent, GateSceneComponent, InformationDisplayComponent, WeighingActionsComponent, PageHeadingComponent],
+  providers: [PesagemMocks], templateUrl: './pesagem.html', styleUrl: './pesagem.css' })
+export class Pesagem implements OnDestroy {
+  readonly state = inject(PesagemState);
+  readonly mock = inject(PesagemMocks);
+  readonly settings = inject(StationSettingsService);
+  readonly auth = inject(PermissionService);
+  private readonly printGateway = inject(PrintGatewayService);
+  printDocument: PrintDocument | null = null;
+  private lastScope = '';
+  private readonly gateStates = new Map<string, PesagemMocks['gates']>();
+  private readonly applySettings = effect(() => {
+    const config = this.settings.settings();
+    const key = this.settings.key();
+    if (key !== this.lastScope) {
+      this.lastScope = key;
+      if (key !== this.state.stationKey) { this.novaPesagem(); this.state.stationKey = key; }
+      this.closeModal();
+      this.mock.gates = this.gateStates.get(key) ?? {};
+      this.gateStates.set(key, this.mock.gates);
+    }
+    this.state.manualEnabled = config.general.manual;
+    this.mock.sgv = config.general.sgv;
+    this.mock.gatesEnabled = config.vehicles.gates;
+    this.mock.lightsEnabled = config.vehicles.lights;
+    this.mock.displayEnabled = config.vehicles.display;
+    this.mock.display = config.vehicles.message;
+    this.mock.bindEquipments(config.vehicles.entryId, config.vehicles.exitId);
+    this.state.permissions = { weigh: this.auth.can('weigh'), editOpen: this.auth.can('editOpen'),
+      useManual: this.auth.can('useManual'), authorizeManual: this.auth.can('authorizeManual'),
+      print: this.auth.can('printTicket') || this.auth.can('reprintTicket') };
+  });
+  gateLabel(side: string): string {
+    return gateOptions.find(g => g.id === this.mock.equipment(side))?.name ?? 'Não parametrizada';
+  }
+  private readonly api = inject(PreTicketService);
+  private readonly config = inject(ConfiguracaoGeralService);
+  private readonly context = inject(StationContext);
+  private readonly indicator = inject(StationIndicator);
+  private readonly printer = inject(PRINT_PORT);
+  private readonly session = inject(DemoSession);
+  readonly fields = fields;
+  readonly actions: { id: Action; label: string; key: string }[] = [
+    { id: 'imprimir', label: 'Impr. Pesagem', key: 'F5' }, { id: 'nova', label: 'Nova Pesagem', key: 'F6' },
+    { id: 'salvar', label: 'Salvar Pesagem', key: 'F10' }, { id: 'manual', label: 'Peso Manual', key: 'F11' },
+    { id: 'pesar', label: 'Pesagem', key: 'F12' }
+  ];
+  @ViewChild('plateInput') plateInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('trailerInput') trailerInput?: ElementRef<HTMLSelectElement>;
+  @ViewChild('modalElement') modalElement?: ElementRef<HTMLElement>;
+  mode: 'mock' | 'real' = 'mock';
   preTicket: PreTicketResponse | null = null;
-
-  // =========================================================
-  // Composição do veículo
-  // =========================================================
-
-  /*
-   * Carreta escolhida ou informada manualmente
-   * para a pesagem atual.
-   */
-  placaCarreta = '';
-
-  /*
-   * Possíveis carretas retornadas pela pré-ticket.
-   */
-  placasCarretas: string[] = [];
-
-  /*
-   * Mensagem específica de validação da carreta.
-   */
-  mensagemCarreta = '';
-
-  get placaCavalo(): string {
-    /*
-     * O Cavalo somente é considerado identificado
-     * depois que uma pré-ticket for encontrada.
-     */
-    return this.preTicket ? this.placa : '';
-  }
-
-  get possuiMultiplasCarretas(): boolean {
-    return this.placasCarretas.length >= 2;
-  }
-
-  get placeholderCarreta(): string {
-    return this.possuiMultiplasCarretas ? 'Selecione uma carreta' : 'Informe a placa da carreta';
-  }
-
-  // =========================================================
-  // Pesagem
-  // =========================================================
-
-  /*
-   * pesoAtual começa zerado.
-   *
-   * O valor será fornecido pelo indicador
-   * físico através do IndicadorPesoService.
-   */
-  pesoAtual = 0;
-
-  /*
-   * Ainda permanece fixo nesta etapa.
-   *
-   * Futuramente podemos identificar estabilidade
-   * através do próprio protocolo do indicador,
-   * caso o equipamento disponibilize essa informação.
-   */
-  pesoEstavel = true;
-
-  /*
-   * Valores das pesagens realizadas.
-   *
-   * Por enquanto continuam sendo controlados
-   * pela própria tela.
-   */
-  pesagem1 = 0;
-
-  pesagem2 = 0;
-
-  pesoSeco = 0;
-
-  get pesoLiquido(): number {
-    return Math.abs(this.pesagem1 - this.pesagem2);
-  }
-
-  get textoStatusIndicador(): string {
-    if (this.indicadorConectando) {
-      return 'Conectando indicador...';
-    }
-
-    if (this.indicadorConectado) {
-      return 'Indicador conectado';
-    }
-
-    return 'Indicador desconectado';
-  }
-
-  get classeStatusIndicador(): string {
-    if (this.indicadorConectando) {
-      return 'loading';
-    }
-
-    if (this.indicadorConectado) {
-      return 'success';
-    }
-
-    return 'error';
-  }
-
-  // =========================================================
-  // Indicador de peso
-  // =========================================================
-
-  private readonly idIndicador = 'indicador-principal';
-
-  private readonly storageKeyIndicador = 'balanca-configuracao-indicador';
-
-  private estadoIndicadorSubscription: Subscription | null = null;
-
-  /*
-   * Estado utilizado pela tela.
-   *
-   * IMPORTANTE:
-   * somente consideramos conectado quando
-   * a conexão for OPERACIONAL.
-   */
-  indicadorConectado = false;
-
-  indicadorConectando = false;
-
-  mensagemIndicador = 'Indicador desconectado.';
-
-  // =========================================================
-  // Controle visual
-  // =========================================================
-
   carregando = false;
-
   mensagem = '';
-
-  tipoMensagem: 'sucesso' | 'erro' | 'aviso' | '' = '';
-
-  // =========================================================
-  // Constructor
-  // =========================================================
-
-  constructor(
-    private readonly configuracaoGeralService: ConfiguracaoGeralService,
-
-    private readonly preTicketService: PreTicketService,
-
-    private readonly indicadorPesoService: IndicadorPesoService,
-  ) {}
-
-  // =========================================================
-  // Inicialização
-  // =========================================================
-
-  ngOnInit(): void {
-    // =======================================================
-    // Unidade da balança configurada para esta estação
-    // =======================================================
-
-    this.cdUnidadeBalanca = this.configuracaoGeralService.obterCodigoUnidadeBalanca();
-
-    // =======================================================
-    // Estado do indicador
-    // =======================================================
-
-    /*
-     * A tela observa continuamente o estado
-     * do indicador principal.
-     */
-    this.estadoIndicadorSubscription = this.indicadorPesoService
-      .obterEstado$(this.idIndicador)
-      .subscribe((estado) => {
-        const conexaoOperacional = estado.conectado && estado.finalidadeConexao === 'OPERACIONAL';
-
-        const conexaoOperacionalEmAndamento =
-          estado.conectando && estado.finalidadeConexao === 'OPERACIONAL';
-
-        this.indicadorConectado = conexaoOperacional;
-
-        this.indicadorConectando = conexaoOperacionalEmAndamento;
-
-        this.mensagemIndicador = estado.mensagem;
-
-        /*
-         * Somente uma leitura proveniente
-         * de uma conexão OPERACIONAL pode
-         * alterar o peso atual.
-         */
-        if (conexaoOperacional && estado.leitura.pesoBruto !== null) {
-          this.pesoAtual = estado.leitura.pesoBruto;
-
-          return;
-        }
-
-        /*
-         * Segurança contra peso antigo.
-         *
-         * Se perdermos a conexão operacional,
-         * não deixamos o último peso recebido
-         * congelado no display.
-         */
-        if (!conexaoOperacional) {
-          this.pesoAtual = 0;
-        }
-      });
-
-    /*
-     * Depois que a assinatura estiver pronta,
-     * tentamos conectar automaticamente.
-     *
-     * Essa conexão será marcada como OPERACIONAL.
-     */
-    void this.iniciarIndicadorOperacional();
+  modal: 'auth' | 'weight' | 'confirm' | 'print' | null = null;
+  modalError = '';
+  user = ''; password = ''; justification = ''; manualWeight: number | null = null;
+  pending: Preview | null = null;
+  printPreview: Preview | null = null;
+  vehicleTab = 'patio'; search = '';
+  private lookupSubscription?: Subscription;
+  private readingSubscription?: Subscription;
+  private generation = 0;
+  private previousFocus?: HTMLElement;
+  private realReading: LeituraEstacao = { peso: null, unidade: 'kg', conectado: false, estavel: false, erro: 'Agente não configurado', dataHoraLeitura: null };
+  private readonly observeContext = effect(() => {
+    const context = this.context.contexto();
+    this.readingSubscription?.unsubscribe();
+    this.realReading = { ...this.realReading, conectado: false, peso: null };
+    if (context) this.readingSubscription = this.indicator.observar(context.estacao.id).subscribe(value => this.realReading = value);
+  });
+  get placa(): string { return this.state.placa; }
+  set placa(value: string) { this.state.placa = value; }
+  get reading(): LeituraEstacao {
+    const value = this.mode === 'mock' ? this.mock.reading : this.realReading;
+    const installations = this.settings.settings().indicators;
+    if (installations.length && !installations.some(i => i.active)) return { ...value, peso: null, conectado: false, estavel: false, comunicacao: 'Desconectado', erro: 'Indicadores inativos.' };
+    return { ...value, comunicacao: value.comunicacao ?? (value.conectado ? 'Conectado' : value.erro ? 'Sem comunicação' : 'Desconectado') };
   }
-
-  // =========================================================
-  // Encerramento
-  // =========================================================
-
-  ngOnDestroy(): void {
-    /*
-     * A página deixa de observar o indicador.
-     */
-    this.estadoIndicadorSubscription?.unsubscribe();
-
-    this.estadoIndicadorSubscription = null;
-
-    /*
-     * Ao sair da tela Pesagem, solicitamos
-     * o encerramento somente de uma conexão
-     * OPERACIONAL.
-     *
-     * O método do serviço possui proteção para
-     * não derrubar uma conexão de TESTE.
-     */
-    void this.indicadorPesoService.desconectarOperacional(this.idIndicador);
+  get exibirDadosOrigem(): boolean { return this.preTicket?.tipoOperacao?.trim().toUpperCase() === 'ENTRADA'; }
+  get vehicles() {
+    const tab = this.mock.sgv ? this.vehicleTab : 'operacao';
+    const search = this.search.trim().toUpperCase();
+    return this.mock.vehicles.filter(v => v.local === tab && `${v.placa} ${v.carreta ?? ''}`.includes(search));
   }
-
-  // =========================================================
-  // Conexão operacional do indicador
-  // =========================================================
-
-  private async iniciarIndicadorOperacional(): Promise<void> {
-    const configuracaoArmazenada = localStorage.getItem(this.storageKeyIndicador);
-
-    // =======================================================
-    // Indicador ainda não configurado
-    // =======================================================
-
-    if (!configuracaoArmazenada) {
-      this.indicadorConectado = false;
-
-      this.pesoAtual = 0;
-
-      this.mensagemIndicador = 'Indicador de peso não configurado.';
-
-      return;
-    }
-
-    try {
-      const configuracao = JSON.parse(configuracaoArmazenada) as IndicadorPesoConfiguracao;
-
-      // =====================================================
-      // Validação básica da configuração
-      // =====================================================
-
-      if (!configuracao || !configuracao.id || !configuracao.comunicacao) {
-        this.indicadorConectado = false;
-
-        this.pesoAtual = 0;
-
-        this.mensagemIndicador = 'Configuração do indicador inválida.';
-
-        return;
+  can(action: Action): boolean { return this.auth.canWeighAction(action) && this.session.loggedIn && !document.querySelector('.session-backdrop') && !this.carregando && !this.modal && this.state.can(action, this.reading.conectado); }
+  readonlyField(field: string): boolean {
+    return field === 'Operador' || Object.hasOwn(this.state.official, field) || this.state.phase === 'fechada' ||
+      (this.state.phase === 'aberta' ? !this.state.permissions.editOpen : !this.state.permissions.weigh);
+  }
+  operator(): string { return this.session.user; }
+  @HostListener('document:keydown', ['$event'])
+  onShortcut(event: KeyboardEvent): void {
+    if (this.modal && event.key === 'Escape') { event.preventDefault(); this.closeModal(); return; }
+    if (this.modal && event.key === 'Tab') {
+      const controls = this.modalElement?.nativeElement.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),textarea,select');
+      if (controls?.length) {
+        const first = controls[0], last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
       }
-
-      // =====================================================
-      // Conexão operacional
-      // =====================================================
-
-      /*
-       * Aqui usamos a configuração já autorizada.
-       *
-       * O IndicadorPesoService utilizará getPorts()
-       * para Serial, portanto não deve aparecer
-       * a caixa de seleção de porta do navegador.
-       */
-      await this.indicadorPesoService.conectarIndicador(configuracao, 'OPERACIONAL');
-    } catch (erro) {
-      console.error('Erro ao carregar configuração do indicador:', erro);
-
-      this.indicadorConectado = false;
-
-      this.pesoAtual = 0;
-
-      this.mensagemIndicador = 'Não foi possível carregar a configuração do indicador.';
+      return;
     }
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const action = this.actions.find(a => a.key === event.key);
+    if (!action) return;
+    event.preventDefault();
+    if (!event.repeat) this.runAction(action.id);
   }
-
-  // =========================================================
-  // Limpar consulta da Pré-ticket
-  // =========================================================
-
-  limparConsulta(): void {
-    this.placa = '';
-
-    this.limparPreTicket();
-
-    this.limparComposicaoVeiculo();
-
+  runAction(action: Action): void {
+    if (!this.can(action)) return;
     this.mensagem = '';
-
-    this.tipoMensagem = '';
-
-    this.carregando = false;
+    this.state.draft['Operador'] = this.operator();
+    switch (action) {
+      case 'nova': this.novaPesagem(); break;
+      case 'salvar':
+        try { this.state.save(); this.printGateway.publish(this.settings.key(), this.state.confirmed ?? this.state.preview(0,null), [this.state.first,this.state.second,this.state.net,this.state.dry]); this.mensagem = 'Dados atualizados em memória. Nenhum peso ou ticket foi gerado.'; }
+        catch (error) { this.mensagem = (error as Error).message; } break;
+      case 'imprimir':
+        this.printPreview = this.printer.preview(this.state.confirmed ?? this.state.preview(0, null));
+        this.printGateway.publish(this.settings.key(), this.printPreview, [this.state.first,this.state.second,this.state.net,this.state.dry]);
+        this.printDocument = this.printGateway.preview(this.settings.key(), this.settings.settings().printing, 'Ticket');
+        this.openModal('print'); break;
+      case 'manual':
+        if (this.state.phase === 'fechada') { this.mensagem = 'Inicie uma nova pesagem.'; return; }
+        this.user = this.password = this.justification = ''; this.manualWeight = null; this.openModal('auth'); break;
+      case 'pesar':
+        if (this.state.phase === 'fechada') { this.mensagem = 'Inicie uma nova pesagem.'; return; }
+        // A referência desconectada permite preview, sem criar captura.
+        const value = this.reading.conectado ? this.reading.peso ?? 0 : 0;
+        this.pending = this.state.preview(value, this.reading.conectado && this.reading.estavel && value > 0
+          ? { peso: value, data: this.reading.dataHoraLeitura ?? new Date().toISOString() } : null);
+        this.openModal('confirm'); break;
+    }
   }
-
-  // =========================================================
-  // Nova pesagem
-  // =========================================================
-
+  openModal(value: NonNullable<Pesagem['modal']>): void {
+    if (!this.modal) this.previousFocus = document.activeElement as HTMLElement;
+    this.modalError = ''; this.modal = value;
+    setTimeout(() => this.modalElement?.nativeElement.querySelector<HTMLElement>('input,button')?.focus());
+  }
+  closeModal(): void { this.modal = null; this.pending = null; this.password = ''; this.justification = ''; this.previousFocus?.focus(); }
+  authorize(): void {
+    if (!this.mock.authorize(this.user, this.password, this.justification, this.auth.userCan(this.user, 'authorizeManual'))) {
+      this.modalError = 'Autorização inválida, sem permissão ou justificativa ausente.'; return;
+    }
+    this.password = ''; this.openModal('weight');
+  }
+  enterManualWeight(): void {
+    const value = Number(this.manualWeight);
+    if (!Number.isFinite(value) || value <= 0) { this.modalError = 'Informe peso maior que zero.'; return; }
+    if (!this.state.can('manual', this.reading.conectado) || !this.auth.userCan(this.user, 'authorizeManual')) {
+      this.modalError = 'Permissão manual indisponível.'; return;
+    }
+    this.pending = this.state.preview(value, { peso: value, data: new Date().toISOString(), autorizador: this.user, justificativa: this.justification.trim() });
+    this.openModal('confirm');
+  }
+  confirm(): void {
+    if (!this.pending) return;
+    const manual = !!this.pending.captura?.autorizador;
+    if (!manual && this.pending.captura && (!this.reading.conectado || !this.reading.estavel)) {
+      this.modalError = 'Indicador sem comunicação ou estabilidade. Cancele e inicie outra confirmação.'; return;
+    }
+    if (!this.auth.canWeighAction(manual ? 'manual' : 'pesar') || !this.state.can(manual ? 'manual' : 'pesar', this.reading.conectado) || (manual && !this.auth.userCan(this.pending.captura!.autorizador!, 'authorizeManual'))) {
+      this.modalError = 'Permissão indisponível.'; return;
+    }
+    try {
+      this.state.confirm(this.pending);
+      this.printGateway.publish(this.settings.key(), this.state.confirmed ?? this.state.preview(0,null), [this.state.first,this.state.second,this.state.net,this.state.dry]);
+      this.closeModal(); this.mensagem = 'Confirmação local. Sem gravação corporativa.';
+    }
+    catch (error) { this.modalError = (error as Error).message; }
+  }
   novaPesagem(): void {
-    /*
-     * Limpa todos os dados relacionados
-     * à consulta da placa atual.
-     */
-    this.limparConsulta();
-
-    /*
-     * Não zeramos pesoAtual aqui.
-     *
-     * pesoAtual representa o peso físico
-     * atualmente presente na balança.
-     */
-    this.pesagem1 = 0;
-
-    this.pesagem2 = 0;
-
-    this.pesoSeco = 0;
+    this.lookupSubscription?.unsubscribe(); ++this.generation;
+    this.carregando = false; this.preTicket = null; this.state.reset();
+    this.state.draft['Operador'] = this.operator(); this.mensagem = '';
+    this.printGateway.publish(this.settings.key(), this.state.preview(0,null));
+    setTimeout(() => this.plateInput?.nativeElement.focus());
   }
-
-  // =========================================================
-  // Consulta da Pré-ticket
-  // =========================================================
-
+  limparConsulta(): void { this.novaPesagem(); }
+  changeMode(): void { this.novaPesagem(); }
+  onPlateTab(event: KeyboardEvent): void {
+    if (event.key === 'Tab' && !event.shiftKey && !this.state.consulted && /^[A-Z]{3}\d[A-Z\d]\d{2}$/.test(normalizePlate(this.placa))) this.consultarPreTicket();
+  }
   consultarPreTicket(): void {
-    this.limparMensagem();
-
-    /*
-     * Uma nova consulta nunca deve reaproveitar
-     * dados da composição anterior.
-     */
-    this.limparPreTicket();
-
-    this.limparComposicaoVeiculo();
-
-    // =======================================================
-    // Atualizar unidade configurada
-    // =======================================================
-
-    /*
-     * Consultamos novamente o serviço antes de cada
-     * pré-ticket.
-     *
-     * Assim a tela sempre utiliza o valor atualmente
-     * salvo nas Configurações Gerais da estação.
-     */
-    this.cdUnidadeBalanca = this.configuracaoGeralService.obterCodigoUnidadeBalanca();
-
-    // =======================================================
-    // Validação da unidade
-    // =======================================================
-
-    if (this.cdUnidadeBalanca === null || this.cdUnidadeBalanca <= 0) {
-      this.limparPreTicket();
-
-      this.mostrarMensagem(
-        'Unidade da balança não configurada. Acesse Configurações > Configurações Gerais.',
-        'aviso',
-      );
-
-      return;
+    if (this.carregando || this.state.consulted || this.state.phase !== 'nova') return;
+    this.placa = normalizePlate(this.placa);
+    if (!/^[A-Z]{3}\d[A-Z\d]\d{2}$/.test(this.placa)) { this.mensagem = 'Informe uma placa válida.'; return; }
+    this.mensagem = '';
+    if (this.mode === 'mock') {
+      const result = this.mock.lookup(this.placa);
+      if (result) this.state.integrate({ ...result.operation, Operador: this.operator() }, result.trailers, result.first);
+      else this.mensagem = 'Placa não encontrada no mock. Preencha os dados manualmente.';
+      this.focusAfterLookup(); return;
     }
-
-    // =======================================================
-    // Validação da placa
-    // =======================================================
-
-    if (!this.placa.trim()) {
-      this.limparPreTicket();
-
-      this.mostrarMensagem('Informe a placa do veículo.', 'aviso');
-
-      return;
-    }
-
-    this.placa = this.placa.trim().toUpperCase();
-
+    const unit = this.context.contexto()?.unidade.codigo ?? this.config.obterCodigoUnidadeBalanca();
+    if (!unit) { this.mensagem = 'Configure a unidade antes de consultar a Libra-API.'; return; }
+    const generation = ++this.generation;
+    const queriedPlate = this.placa;
     this.carregando = true;
-
-    // =======================================================
-    // Chamada da Libra-API
-    // =======================================================
-
-    this.preTicketService.buscarPreTicket(this.cdUnidadeBalanca, this.placa).subscribe({
-      next: (resposta: PreTicketResponse) => {
-        this.preTicket = resposta;
-
-        /*
-         * Prepara as possíveis carretas retornadas
-         * pela Libra-API.
-         */
-        this.prepararCarretas(resposta.placasCarretas);
-
+    this.lookupSubscription = this.api.buscarPreTicket(unit, this.placa).subscribe({
+      next: response => {
+        if (generation !== this.generation || normalizePlate(this.placa) !== queriedPlate) { this.carregando = false; return; }
         this.carregando = false;
-
-        this.mostrarMensagem(resposta.descricaoRetorno, 'sucesso');
+        if (response.codigoRetorno !== 'S') { this.mensagem = response.descricaoRetorno; return; }
+        this.preTicket = response;
+        const entries = { Motorista: response.motorista, Transportadora: response.transportador, 'Emissor(es)': response.emissor,
+          'Depósito': response.deposito, 'Tipo do documento': response.tipoDocumento, 'Nº Nota(s) / Documento(s)': response.nota,
+          'Peso N.F. (Kg)': response.quantidadeTotal, Embalagem: response.codigoEmbalagem };
+        this.state.integrate(Object.fromEntries(Object.entries(entries).map(([k,v]) => [k, v == null ? '' : String(v)])), response.placasCarretas ?? []);
+        this.state.draft['Operador'] = this.operator(); this.focusAfterLookup();
       },
-
-      error: (erro: HttpErrorResponse) => {
+      error: (error: HttpErrorResponse) => {
+        if (generation !== this.generation) return;
         this.carregando = false;
-
-        this.limparPreTicket();
-
-        this.limparComposicaoVeiculo();
-
-        this.tratarErro(erro);
-      },
+        const fields = error.error?.campos;
+        const messages: Record<number, string> = {
+          0: 'Não foi possível acessar a Libra-API. Verifique conexão, certificado HTTPS e CORS.',
+          400: fields ? Object.values(fields).join(' ') : 'Verifique os parâmetros informados.',
+          401: 'Falha de autenticação com a Libra-API.',
+          404: 'Nenhuma pré-ticket encontrada para a placa informada.',
+          409: 'Existe um conflito entre as pré-tickets encontradas.',
+          500: 'Ocorreu um erro interno durante a consulta.'
+        };
+        this.mensagem = (error.error?.descricaoRetorno ?? messages[error.status] ?? 'Consulta indisponível.') + ' Entrada manual disponível; nenhum mock aplicado à resposta real.';
+      }
     });
   }
-
-  // =========================================================
-  // Dados de origem
-  // =========================================================
-
-  /**
-   * Dados da pesagem de origem aparecem
-   * somente nas operações de entrada.
-   */
-  get exibirDadosOrigem(): boolean {
-    const tipoOperacao = this.preTicket?.tipoOperacao?.trim().toUpperCase();
-
-    return tipoOperacao === 'ENTRADA';
+  private focusAfterLookup(): void {
+    setTimeout(() => {
+      if (this.state.trailers.length > 1) this.trailerInput?.nativeElement.focus();
+      else document.querySelector<HTMLInputElement>('.operation-grid input:not([readonly])')?.focus();
+    });
   }
-
-  // =========================================================
-  // Formatação da operação
-  // =========================================================
-
-  formatarTipoOperacao(tipoOperacao: string | null | undefined): string {
-    switch (tipoOperacao) {
-      case 'ENTRADA':
-        return 'RECEBIMENTO XFER';
-
-      case 'SAIDA':
-        return 'SAÍDA XFER';
-
-      default:
-        return '';
-    }
-  }
-
-  // =========================================================
-  // Tratamento dos erros da Libra-API
-  // =========================================================
-
-  private tratarErro(erro: HttpErrorResponse): void {
-    const descricaoApi = erro.error?.descricaoRetorno;
-
-    switch (erro.status) {
-      case 400:
-        this.mostrarMensagem(this.obterMensagemValidacao(erro), 'aviso');
-
-        break;
-
-      case 401:
-        this.mostrarMensagem('Falha de autenticação com a Libra-API.', 'erro');
-
-        break;
-
-      case 404:
-        this.mostrarMensagem(
-          descricaoApi ?? 'Nenhuma pré-ticket encontrada para a placa informada.',
-          'aviso',
-        );
-
-        break;
-
-      case 409:
-        this.mostrarMensagem(
-          descricaoApi ?? 'Existe um conflito entre as pré-tickets encontradas.',
-          'aviso',
-        );
-
-        break;
-
-      case 500:
-        this.mostrarMensagem(descricaoApi ?? 'Ocorreu um erro interno durante a consulta.', 'erro');
-
-        break;
-
-      case 0:
-        this.mostrarMensagem(
-          'Não foi possível acessar a Libra-API. Verifique se a API está em execução, o certificado HTTPS e a configuração de CORS.',
-          'erro',
-        );
-
-        break;
-
-      default:
-        this.mostrarMensagem(descricaoApi ?? 'Não foi possível realizar a consulta.', 'erro');
-    }
-  }
-
-  // =========================================================
-  // Mensagem de validação da API
-  // =========================================================
-
-  private obterMensagemValidacao(erro: HttpErrorResponse): string {
-    const campos = erro.error?.campos;
-
-    if (campos) {
-      const mensagens = Object.values(campos) as string[];
-
-      if (mensagens.length > 0) {
-        return mensagens.join(' ');
-      }
-    }
-
-    return erro.error?.descricaoRetorno ?? 'Verifique os parâmetros informados.';
-  }
-  // =========================================================
-  // Estado da consulta da Pré-ticket
-  // =========================================================
-
-  get preTicketCarregado(): boolean {
-    return this.preTicket !== null;
-  }
-  // =========================================================
-  // Limpeza da Pré-ticket
-  // =========================================================
-
-  private limparPreTicket(): void {
-    this.preTicket = null;
-  }
-
-  // =========================================================
-  // Composição do veículo
-  // =========================================================
-
-  private prepararCarretas(placas: string[] | null | undefined): void {
-    const placasNormalizadas = (placas ?? [])
-      /*
-       * Proteção também para eventual valor inválido
-       * recebido em tempo de execução.
-       */
-      .filter((placa): placa is string => typeof placa === 'string')
-      /*
-       * Remove espaços e padroniza em maiúsculas.
-       */
-      .map((placa) => placa.trim().toUpperCase())
-      /*
-       * Remove valores vazios.
-       */
-      .filter((placa) => placa.length > 0);
-
-    /*
-     * Remove placas duplicadas.
-     */
-    this.placasCarretas = [...new Set(placasNormalizadas)];
-
-    /*
-     * Uma única carreta:
-     * selecionamos automaticamente.
-     *
-     * Nenhuma ou várias:
-     * campo começa vazio.
-     */
-    this.placaCarreta = this.placasCarretas.length === 1 ? this.placasCarretas[0] : '';
-
-    this.mensagemCarreta = '';
-  }
-
-  private limparComposicaoVeiculo(): void {
-    this.placaCarreta = '';
-
-    this.placasCarretas = [];
-
-    this.mensagemCarreta = '';
-  }
-
-  /*
-   * Utilizado quando o balanceiro informar
-   * uma carreta manualmente.
-   */
-  normalizarPlacaCarreta(): void {
-    this.placaCarreta = this.placaCarreta.trim().toUpperCase();
-
-    this.mensagemCarreta = '';
-  }
-
-  // =========================================================
-  // Mensagens
-  // =========================================================
-
-  private limparMensagem(): void {
-    this.mensagem = '';
-
-    this.tipoMensagem = '';
-  }
-
-  private mostrarMensagem(
-    mensagem: string,
-
-    tipo: 'sucesso' | 'erro' | 'aviso',
-  ): void {
-    this.mensagem = mensagem;
-
-    this.tipoMensagem = tipo;
-  }
+  ngOnDestroy(): void { ++this.generation; this.lookupSubscription?.unsubscribe(); this.readingSubscription?.unsubscribe(); }
 }
